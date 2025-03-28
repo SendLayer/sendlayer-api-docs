@@ -1,0 +1,566 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+      "title": "SendLayer API",
+      "version": "1.0.0",
+      "description": "Welcome to the SendLayer API! To learn how to access your SendLayer API key, check out our tutorial on <a href=\"https://sendlayer.com/docs/managing-api-keys/\" title=\"Managing API Keys\">managing API keys</a>. <br/><br/> For a quick introduction to sending emails, see our guide to <a href=\"https://sendlayer.com/docs/getting-started-with-the-sendlayer-api/\" title=\"Getting Started With the SendLayer API\">getting started with the SendLayer API</a>.<br/><br/><strong>Need help?</strong> <a href=\"https://sendlayer.com/contact/\" title=\"SendLayer Support Page\">Contact the SendLayer support team</a>"
+    },
+    
+    "paths": {
+      "/email": {
+        "post": {
+          "tags": [
+            "Email"
+          ],
+          "summary": "Send an email with an optional attachment",
+          "description": "SendLayer sends emails through the API based on JSON input. The JSON properties, such as `Subject`, `HTMLContent`, and `PlainContent`, are converted to a valid message when sent to the recipient.\n\n**Note:** A table containing custom error codes can be found in **Schemas &raquo; Error codes**.",
+          "operationId": "sendEmail",
+          "requestBody": {
+            "description": "Below is the JSON payload required for sending a single email. Be sure to replace the example email addresses with valid email addresses in the `From` and `To` objects.\n\n**Note:** The `From` email address must contain your sender domain, which is the domain that you’ve verified in SendLayer. For example, if you’ve authorized **example.com** you’ll need to use **your-email@example.com**.\nAdditionally, you can send emails to multiple recipients by adding more objects to the `To`, `CC`,and `BCC` arrays within the specified limits. See our [Getting Started guide](https://sendlayer.com/docs/getting-started-with-the-sendlayer-api/#limit) for more details.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK \n\nA successfully delivered email returns the `MessageID`",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PostEmailResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/events": {
+        "get": {
+          "tags": [
+            "Events"
+          ],
+          "summary": "Returns all logged email events",
+          "description": "Returns events regarding the status of your email.\n\n To learn more about the different event types, see our guide to [checking the email log in SendLayer](https://sendlayer.com/docs/checking-the-email-log/).",
+          "responses": {
+            "200": {
+              "description": "OK \n\nA succesful response returns records for the logged email event(s)",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetEventsResponse"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "schema": {
+                "type": "number",
+                "example": 1646901478
+              },
+              "in": "query",
+              "name": "StartDate",
+              "description": "Unix Timestamp"
+            },
+            {
+              "schema": {
+                "type": "number",
+                "example": 1646901480
+              },
+              "in": "query",
+              "name": "EndDate",
+              "description": "Unix Timestamp"
+            },
+            {
+              "schema": {
+                "type": "string",
+                "example": "delivered"
+              },
+              "in": "query",
+              "name": "Event",
+              "description": "Name of event type (accepted, rejected, failed, delivered, opened, clicked, unsubscribed, complained)"
+            },
+            {
+              "schema": {
+                "type": "number",
+                "minimum": 0,
+                "example": "0"
+              },
+              "in": "query",
+              "name": "StartFrom"
+            },
+            {
+              "schema": {
+                "type": "string",
+                "example": "100"
+              },
+              "in": "query",
+              "name": "RetrieveCount"
+            },
+            {
+              "schema": {
+                "type": "string",
+                "example": "10210a3d-7d37-4967-9c20-ad4e26016a78"
+              },
+              "in": "query",
+              "name": "MessageID"
+            }
+          ]
+        },
+        "parameters": []
+      },
+      "/webhooks": {
+        "post": {
+          "tags": [
+            "Webhooks"
+          ],
+          "summary": "Add a new webhook",
+          "description": "Creates a new webhook by adding the webhook event type and webhook URL. \n\nFor details on using webhooks in the SendLayer app, see our guide to [managing webhooks](https://sendlayer.com/docs/managing-webhooks/).",
+          "responses": {
+            "200": {
+              "description": "OK \n\nA successfully created webhook returns the `NewWebhookID`",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PostWebhooksResponse"
+                  }
+                }
+              }
+            }
+          },
+          "requestBody": {
+            "description": "Below is the JSON payload required for creating a new webhook. Be sure to replace the example URL with your webhook URL and choose a valid webhook event from the following options: `bounce`,`click`, `open`, `unsubscribe`, `complaint`, `delivery`.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookRequestBody"
+                }
+              }
+            }
+          }
+        },
+        "get": {
+          "tags": [
+            "Webhooks"
+          ],
+          "summary": "Returns all available webhooks",
+          "description": "Returns all the available webhooks you've added to your domain registered in SendLayer.\n\nFor details on using webhooks in the SendLayer app, see our guide to [managing webhooks](https://sendlayer.com/docs/managing-webhooks/).",
+          "responses": {
+            "200": {
+              "description": "OK \n\nA succesful response returns records for the webhooks you've added to your registered domain",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetWebhooksResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/webhooks/{id}": {
+        "delete": {
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "description": "The id of the webhook to delete",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "tags": [
+            "Webhooks"
+          ],
+          "summary": "Delete webhook by ID",
+          "description": "Deletes a webhook by ID. Be sure to replace `{id}` with the ID of the webhook you'd like to delete.\n\nFor details on using webhooks in the SendLayer app, see our guide to [managing webhooks](https://sendlayer.com/docs/managing-webhooks/).",
+          "responses": {
+            "200": {
+              "description": "Sucessful response"
+            }
+          }
+        }
+      }
+    },
+    "servers": [
+      {
+        "url": "https://console.sendlayer.com/api/v1/"
+      }
+    ],
+    "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      },
+      "schemas": {
+        "EmailErrorCodes": {
+          "title": "Error codes",
+          "description": "**The table below defines the custom error codes that this API may return**\n| Code | Message                       |\n|------|-------------------------------|\n| 1    | Missing SenderAPIKey          |\n| 2    | Missing FromName              |\n| 3    | Missing FromEmail             |\n| 4    | Missing ReplyToName           |\n| 5    | Missing ReplyToEmail          |\n| 6    | Missing ToName                |\n| 7    | Missing ToEmail               |\n| 8    | Missing Subject               |\n| 9    | Missing ContentType           |\n| 10   | Missing HTMLContent           |\n| 11   | Missing PlainContent          |\n| 12   | Invalid user                  |\n| 13   | Invalid sender API key        |\n| 14   | Recipient email is suppressed |\n| 15   | Invalid TemplateID            |\n| 16   | Invalid TargetListID          |\n| 17   | Email quota reached           |\n| 18   | Recipient name or email address is missing |\n| 19   | Recipient email address is invalid           |\n| 20   | There is no recipient set for the email OR The number of recipients exceed the allowed recipient email address count           |\n| 21   | CC name or email address is missing           |\n| 22   | CC email address is invalid           |\n| 23   | Invalid from email address format           |\n| 24   | BCC email addresses must be set as an array           |\n| 25   | BCC name or email address is missing           |\n| 26   | BCC email address is invalid           |\n| 27   | The number of BCC email addresses exceed the allowed email address count           |\n| 28   | Reply-To email addresses must be set as an array           |\n| 29   | Reply-To name or email address is missing           |\n| 30   | Reply-To email address is invalid           |\n| 31   | The number of Reply-To email addresses exceed the allowed email address count           |\n| 32   | Domain is not activated           |\n| 429  | Too many requests           |\n"
+        },
+        "PostEmailResponse": {
+          "title": "POST email response",
+          "description": "A successfully delivered email returns the MessageID",
+          "type": "object",
+          "properties": {
+            "MessageID": {
+              "type": "string",
+              "example": "8912e59e-ec88-bcd6-45dd-0012fe223ab6"
+            }
+          }
+        },
+        "GetEventsResponse": {
+          "title": "GET events response",
+          "type": "object",
+          "properties": {
+            "TotalRecords": {
+              "type": "integer",
+              "example": 1
+            },
+            "Events": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "Event": {
+                    "type": "string",
+                    "example": "opened"
+                  },
+                  "LoggedAt": {
+                    "type": "integer",
+                    "example": 1658326035
+                  },
+                  "LogLevel": {
+                    "type": "string",
+                    "example": "info"
+                  },
+                  "Message": {
+                    "type": "object",
+                    "properties": {
+                      "Headers": {
+                        "type": "object",
+                        "properties": {
+                          "MessageId": {
+                            "type": "string",
+                            "example": "70e80563-4e08-4313-9b8b-ad56449bfbb6"
+                          },
+                          "From": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "example": "paulie@example.com"
+                            }
+                          },
+                          "ReplyTo": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "To": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "example": "Pattie Paloma, pattie@exampledomain.com"
+                            }
+                          },
+                          "Cc": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "Bcc": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {}
+                            }
+                          },
+                          "Subject": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "Reason": {
+                    "type": "string",
+                    "example": "Email opened."
+                  },
+                  "Ip": {
+                    "type": "string",
+                    "example": "10.30.126.18"
+                  },
+                  "Geolocation": {
+                    "type": "object",
+                    "properties": {
+                      "City": {
+                        "type": "string"
+                      },
+                      "Region": {
+                        "type": "string"
+                      },
+                      "Country": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "PostWebhooksResponse": {
+          "title": "POST webhooks response",
+          "description": "A successfully created webhook returns the NewWebhookID",
+          "type": "object",
+          "properties": {
+            "NewWebhookID": {
+              "type": "integer",
+              "example": 972
+            }
+          }
+        },
+        "GetWebhooksResponse": {
+          "title": "GET webhooks response",
+          "description": "A succesful response returns records for the webhooks you've added to your registered domain.",
+          "type": "object",
+          "properties": {
+            "Webhooks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "WebhookID": {
+                    "type": "string",
+                    "example": 972
+                  },
+                  "CreatedAt": {
+                    "type": "string",
+                    "example": "2022-07-25T17:33:32.000Z"
+                  },
+                  "UpdatedAt": {
+                    "type": "string",
+                    "example": "2022-07-25T17:33:32.000Z"
+                  },
+                  "Status": {
+                    "type": "string",
+                    "example": "Enabled"
+                  },
+                  "WebhookURL": {
+                    "type": "string",
+                    "example": "https://eojhlevpsweagozcsg.m.example.net"
+                  },
+                  "Event": {
+                    "type": "string",
+                    "example": "delivered"
+                  },
+                  "LastResponseCode": {
+                    "type": "string",
+                    "example": 0
+                  },
+                  "LastResponseBody": {
+                    "type": "string",
+                    "example": ""
+                  },
+                  "LastResponseAt": {
+                    "type": "string",
+                    "example": "1899-11-30T00:00:00.000Z"
+                  },
+                  "LastResponseTryCounter": {
+                    "type": "string",
+                    "example": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "EmailRequestBody": {
+          "title": "POST email request body",
+          "type": "object",
+          "required": [
+            "From",
+            "To",
+            "Subject",
+            "ContentType",
+            "HTMLContent"
+          ],
+          "properties": {
+            "From": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Paulie Paloma"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "paulie@example.com"
+                }
+              }
+            },
+            "To": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Pattie Paloma"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "pattie@exampledomain.com"
+                  }
+                }
+              }
+            },
+            "CC": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Pattie Paloma CC"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "pattie.cc@exampledomain.com"
+                  }
+                }
+              }
+            },
+            "BCC": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Pattie Paloma BCC"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "pattie.bcc@exampledomain.com"
+                  }
+                }
+              }
+            },
+            "ReplyTo": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Pattie Paloma ReplyTo"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "pattie.reply@exampledomain.com"
+                  }
+                }
+              }
+            },
+            "Subject": {
+              "type": "string",
+              "example": "This is the email subject"
+            },
+            "ContentType": {
+              "type": "string",
+              "example": "HTML"
+            },
+            "HTMLContent": {
+              "type": "string",
+              "example": "<html><body><p>This is a test email sent with the <a href=\\\"https://sendlayer.com\\\">SendLayer</a> API!</p></body></html>"
+            },
+            "Tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "newsletter, daily"
+              }
+            },
+            "Headers": {
+              "type": "object",
+              "properties": {
+                "X-Mailer": {
+                  "type": "string",
+                  "example": "test mailer"
+                },
+                "X-Test": {
+                  "type": "string",
+                  "example": "test header"
+                }
+              }
+            },
+            "Attachments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "Content": {
+                    "type": "string",
+                    "example": "BASE 64 ENCODED STRING"
+                  },
+                  "Type": {
+                    "type": "string",
+                    "example": "image/png"
+                  },
+                  "Filename": {
+                    "type": "string",
+                    "example": "test.png"
+                  },
+                  "Disposition": {
+                    "type": "string",
+                    "example": "attachment"
+                  },
+                  "ContentId": {
+                    "type": "integer",
+                    "example": "0"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "WebhookRequestBody": {
+          "title": "POST webhook request body",
+          "type": "object",
+          "properties": {
+            "Event": {
+              "type": "string",
+              "example": "delivery"
+            },
+            "WebhookURL": {
+              "type": "string",
+              "example": "www.example.com"
+            }
+          }
+        }
+      }
+    }
+  }

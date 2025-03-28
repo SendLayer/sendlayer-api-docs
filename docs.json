@@ -1,39 +1,16 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "SendLayer API Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#211FA6",
+    "light": "#2f2dc2",
+    "dark": "#211FA6"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Get Started",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Essentials",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
-            ]
-          }
-        ]
-      },
+
       {
         "tab": "API Reference",
         "groups": [
@@ -44,12 +21,23 @@
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Email",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/email"
+            ]
+          },
+          {
+            "group": "Events",
+            "pages": [
+              "api-reference/endpoint/events"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/endpoint/webhooks/get",
+              "api-reference/endpoint/webhooks/post",
+              "api-reference/endpoint/webhooks/delete"
             ]
           }
         ]
@@ -59,17 +47,17 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "href": "https://sendlayer.com/docs",
           "icon": "book-open-cover"
         },
         {
           "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "href": "https://twitter.com/sendlayer",
+          "icon": "twitter"
         },
         {
           "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "href": "https://sendlayer.com/blog",
           "icon": "newspaper"
         }
       ]
@@ -82,21 +70,104 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Sign in",
+        "href": "https://app.sendlayer.com"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get Started",
+      "href": "https://sendlayer.com/pricing/"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+      "x": "https://x.com/sendlayer",
+      "github": "https://github.com/sendlayer",
+      "linkedin": "https://linkedin.com/company/sendlayer"
+    },
+    "links": [
+      {
+        "header": "Company",
+        "items": [
+          {
+            "label": "Pricing",
+            "href": "https://sendlayer.com/pricing/"
+          },
+          {
+            "label": "Contact",
+            "href": "https://sendlayer.com/contact/"
+          },
+          {
+            "label": "Features",
+            "href": "https://sendlayer.com/features/"
+          },
+          {
+            "label": "About",
+            "href": "https://sendlayer.com/about"
+          },
+          {
+            "label": "Support",
+            "href": "https://sendlayer.com/contact/"
+          }
+          
+        ]
+      },
+      {
+        "header": "Built for You",
+        "items": [
+          {
+            "label": "Email API",
+            "href": "https://sendlayer.com/features/email-api/"
+          },
+          {
+            "label": "SMTP",
+            "href": "https://sendlayer.com/features/smtp/"
+          },
+          {
+            "label": "Email Logs",
+            "href": "https://sendlayer.com/features/email-logs/"
+          },
+          {
+            "label": "Open & Click Tracking",
+            "href": "https://sendlayer.com/features/open-and-click-tracking/"
+          },
+          {
+            "label": "Email Analytics",
+            "href": "https://sendlayer.com/features/email-analytics/"
+          },
+          {
+            "label": "Transactional SMTP",
+            "href": "https://sendlayer.com/features/transactional-smtp-service/"
+          }
+          
+        ]
+      },
+      {
+        "header": "Popular Docs",
+        "items": [
+          {
+            "label": "Creating Your Account",
+            "href": "https://sendlayer.com/docs/creating-your-account/"
+          },
+          {
+            "label": "Authorizing Your Domain",
+            "href": "https://sendlayer.com/docs/authorizing-your-domain/"
+          },
+          {
+            "label": "Connecting Your Site to SMTP",
+            "href": "https://sendlayer.com/docs/connecting-your-site-with-smtp/"
+          },
+          {
+            "label": "Protecting Your Site From Spam",
+            "href": "https://sendlayer.com/docs/protecting-your-site-from-spam/"
+          },
+          {
+            "label": "Managing Your Supression List",
+            "href": "https://sendlayer.com/docs/managing-your-suppression-list/"
+          }
+        ]
+      }
+    ]
   }
 }

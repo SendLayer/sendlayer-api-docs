@@ -1,30 +1,25 @@
-# Mintlify Starter Kit
+# SendLayer API Documentation
 
-Click on `Use this template` to copy the Mintlify starter kit. The starter kit contains examples including
+This code include API reference for SendLayer's API endpoints. It is built using Mintlify.
 
-- Guide pages
-- Navigation
-- Customizations
-- API Reference pages
-- Use of popular components
+### Running Locally
 
-### Development
+1. Clone or Fork this repository to your local machine `https://github.com/SendLayer/sendlayer-api-docs.git`.
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+2. Then install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
 
 ```
 npm i -g mintlify
 ```
 
-Run the following command at the root of your documentation (where docs.json is)
+3. Run the following command at the root of your documentation (where docs.json is)
 
 ```
 mintlify dev
 ```
 
-### Publishing Changes
-
-Install our Github App to auto propagate changes from your repo to your deployment. Changes will be deployed to production automatically after pushing to the default branch. Find the link to install on your dashboard. 
+### Live Preview
+You can also view the documentation live on [SendLayer's Documentation](https://wpformscollective.mintlify.app/api-reference/introduction)
 
 #### Troubleshooting
 
