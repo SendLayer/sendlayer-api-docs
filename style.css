@@ -1,3 +1,17 @@
-#footer div>div:nth-child(3) {
+.h-\[1px\].w-full.bg-gray-100.dark\:bg-white\/5 + .flex.items-center.justify-between {
     display: none;
+  }
+
+.gap-4 {
+gap: 0.6rem;
+}
+
+#footer a {
+    font-size: 12px;
+    color: #53536b;
+}
+
+#footer a:hover {
+    color: #211FA6;
+    text-decoration: underline;
 }
