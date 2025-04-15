@@ -91,15 +91,16 @@
               "schema": {
                 "type": "number",
                 "minimum": 0,
-                "example": "0"
+                "example": 0
               },
               "in": "query",
               "name": "StartFrom"
             },
             {
               "schema": {
-                "type": "string",
-                "example": "100"
+                "type": "number",
+                "minimum": 1,
+                "example": 20
               },
               "in": "query",
               "name": "RetrieveCount"
@@ -176,7 +177,7 @@
               "required": true,
               "description": "The id of the webhook to delete",
               "schema": {
-                "type": "string"
+                "type": "number"
               }
             }
           ],
