@@ -98,8 +98,8 @@
             },
             {
               "schema": {
-                "type": "string",
-                "example": "100"
+                "type": "number",
+                "example": "20"
               },
               "in": "query",
               "name": "RetrieveCount"
@@ -176,7 +176,7 @@
               "required": true,
               "description": "The id of the webhook to delete",
               "schema": {
-                "type": "string"
+                "type": "number"
               }
             }
           ],
