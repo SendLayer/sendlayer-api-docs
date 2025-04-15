@@ -1,12 +1,21 @@
 # SendLayer API Documentation
 
-This code include API reference for SendLayer's API endpoints. It is built using Mintlify.
+This code includes API references for SendLayer's API endpoints.
+
+### Getting Started with SendLayer
+
+SendLayer is a transactional email service that helps you improve your email deliverability. Our powerful email delivery system lets you send transactional emails quickly and reliably.
+
+- Visit our [Developers site](https://developers.sendlayer.com) 💻 for REST API reference and SDK guides
+- Read our [Documentation](https://sendlayer.com/docs) ❓ for guides on how to get started with SendLayer
+- Contact our [Support team](https://sendlayer.com/contact/) 📨 if you require more assistance
+
 
 ### Running Locally
 
 1. Clone or Fork this repository to your local machine `https://github.com/SendLayer/sendlayer-api-docs.git`.
 
-2. Then install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+2. Then install the Mintlify CLI to preview the documentation changes locally. To install, use the following command
 
 ```
 npm i -g mintlify
@@ -18,10 +27,3 @@ npm i -g mintlify
 mintlify dev
 ```
 
-### Live Preview
-You can also view the documentation live on [SendLayer's Documentation](https://wpformscollective.mintlify.app/api-reference/introduction)
-
-#### Troubleshooting
-
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `docs.json`
