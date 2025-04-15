@@ -1,32 +1,29 @@
-# Mintlify Starter Kit
+# SendLayer API Documentation
 
-Click on `Use this template` to copy the Mintlify starter kit. The starter kit contains examples including
+This code includes API references for SendLayer's API endpoints.
 
-- Guide pages
-- Navigation
-- Customizations
-- API Reference pages
-- Use of popular components
+### Getting Started with SendLayer
 
-### Development
+SendLayer is a transactional email service that helps you improve your email deliverability. Our powerful email delivery system lets you send transactional emails quickly and reliably.
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+- Visit our [Developers site](https://developers.sendlayer.com) 💻 for REST API reference and SDK guides
+- Read our [Documentation](https://sendlayer.com/docs) ❓ for guides on how to get started with SendLayer
+- Contact our [Support team](https://sendlayer.com/contact/) 📨 if you require more assistance
+
+
+### Running Locally
+
+1. Clone or Fork this repository to your local machine `https://github.com/SendLayer/sendlayer-api-docs.git`.
+
+2. Then install the Mintlify CLI to preview the documentation changes locally. To install, use the following command
 
 ```
 npm i -g mintlify
 ```
 
-Run the following command at the root of your documentation (where docs.json is)
+3. Run the following command at the root of your documentation (where docs.json is)
 
 ```
 mintlify dev
 ```
 
-### Publishing Changes
-
-Install our Github App to auto propagate changes from your repo to your deployment. Changes will be deployed to production automatically after pushing to the default branch. Find the link to install on your dashboard. 
-
-#### Troubleshooting
-
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `docs.json`

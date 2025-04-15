@@ -1,33 +1,31 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'SendLayer API endpoints'
 ---
 
-<Note>
+{/* <Note>
   If you're not looking to build API reference documentation, you can delete
   this section by removing the api-reference folder.
-</Note>
+</Note> */}
 
 ## Welcome
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+Welcome to the SendLayer API documentation. For a quick introduction to sending emails, see our guide to [getting started with the SendLayer API](https://sendlayer.com/docs/getting-started-with-the-sendlayer-api/).
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Base URL
+
+SendLayer's API follows **REST** principles. All requests contain the following base URL:
+
+```
+https://console.sendlayer.com/api/v1/
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints are authenticated using Bearer tokens. To authenticate, you'll need to add an **Authorization** header with the content of the header being `Bearer <token>`, where token is your SendLayer API key.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+To learn how to access your SendLayer API key, check out our tutorial on [managing API keys](https://sendlayer.com/docs/managing-api-keys/).
+
+```
+Authorization: 'Bearer <token>'
 ```
