@@ -91,7 +91,7 @@
               "schema": {
                 "type": "number",
                 "minimum": 0,
-                "example": "0"
+                "example": 0
               },
               "in": "query",
               "name": "StartFrom"
@@ -99,7 +99,8 @@
             {
               "schema": {
                 "type": "number",
-                "example": "20"
+                "minimum": 1,
+                "example": 20
               },
               "in": "query",
               "name": "RetrieveCount"
