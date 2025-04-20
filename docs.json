@@ -171,8 +171,8 @@
     ]
   },
   "integrations": {
-    "gtm": {
-        "tagId": "GTM-ND5DN5D"
+    "ga4": {
+        "measurementId": "G-22H4JY4KNJ"
     }
 }
 }
