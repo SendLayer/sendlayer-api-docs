@@ -17,7 +17,9 @@
           {
             "group": "API Documentation",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/rate-limit",
+              "api-reference/error-codes"
             ]
           },
           {
