@@ -1,0 +1,60 @@
+---
+title: 'Error Codes'
+description: 'List of API errors and their description'
+icon: 'triangle-exclamation'
+---
+
+### SendLayer API Error Codes
+
+If your API call is unsuccessful, an error code and message will be returned in JSON. Below is a list of the error codes:
+
+| Code | Message |
+| ---- | ------- |
+| 1 | Missing SenderAPIKey |
+| 2 | Missing FromName |
+| 3 | Missing FromEmail |
+| 4 | Missing ReplyToName |
+| 5 | Missing ReplyToEmail |
+| 6 | Missing ToName |
+| 7 | Missing ToEmail |
+| 8 | Missing Subject |
+| 9 | Missing ContentType |
+| 10 | Missing HTMLContent |
+| 11 | Missing PlainContent |
+| 12 | Invalid user |
+| 13 | Invalid sender API key |
+| 14 | Recipient email is suppressed |
+| 15 | Invalid TemplateID |
+| 16 | Invalid TargetListID |
+| 17 | Email quota reached |
+| 18 | Recipient name or email address is missing |
+| 19 | Recipient email address is invalid |
+| 20 | There is no recipient set for the email **OR** The number of recipients exceeds the allowed recipient email address count |
+| 21 | CC name or email address is missing |
+| 22 | CC email address is invalid |
+| 23 | Invalid from email address format |
+| 24 | BCC email addresses must be set as an array |
+| 25 | BCC name or email address is missing |
+| 26 | BCC email address is invalid |
+| 27 | The number of BCC email addresses exceed the allowed email address count |
+| 28 | Reply-To email addresses must be set as an array |
+| 29 | Reply-To name or email address is missing |
+| 30 | Reply-To email address is invalid |
+| 31 | The number of Reply-To email addresses exceed the allowed email address count |
+| 32 | Domain is not activated |
+| 404 | Resource not found |
+| 422 | Invalid request parameters |
+| 429 | Too many requests |
+
+### Example Error Response
+
+```json
+{
+    "Errors": [
+        {
+            "Code": 13,
+            "Message": "Invalid SenderAPIKey"
+        }
+    ]
+}
+```
