@@ -9,42 +9,78 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "groups": "Developer Guides",
+        "pages": [
+          {
+            "group": "API Reference",
+            "pages": [
+              {
+                "group": "Getting Started",
+                "pages":[
+                  "api-reference/introduction",
+                  "api-reference/rate-limit",
+                  "api-reference/error-codes"
+                ]
+              },
+              {
+                "group": "Email",
+                "pages": [
+                  "api-reference/endpoint/email"
+                ]
+              },
+              {
+                "group": "Events",
+                "pages": [
+                  "api-reference/endpoint/events"
+                ]
+              },
+              {
+                "group": "Webhooks",
+                "pages": [
+                  "api-reference/endpoint/webhooks/get",
+                  "api-reference/endpoint/webhooks/post",
+                  "api-reference/endpoint/webhooks/delete"
+                ]
+              }
+            ]
 
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "API Documentation",
-            "pages": [
-              "api-reference/introduction",
-              "api-reference/rate-limit",
-              "api-reference/error-codes"
-            ]
           },
           {
-            "group": "Email",
+            "group": "SDK Usage",
             "pages": [
-              "api-reference/endpoint/email"
+              {
+                "group": "JavaScript",
+                "pages":[
+                  "sdks/nodejs/introduction"
+                ]
+              },
+              {
+                "group": "Python",
+                "pages": [
+                  "sdks/python/introduction"
+                ]
+              }
             ]
+
           },
           {
-            "group": "Events",
+            "group": "Guides",
             "pages": [
-              "api-reference/endpoint/events"
+              {
+                "group": "Sending Emails",
+                "pages":[
+                  "guides/send-email",
+                  "guides/send-email-with-attachments",
+                  "guides/send-email-to-multiple-recipients"
+                ]
+              },
+              "guides/get-events",
+              "guides/manage-webhooks",
+              "guides/error-handling"
             ]
-          },
-          {
-            "group": "Webhooks",
-            "pages": [
-              "api-reference/endpoint/webhooks/get",
-              "api-reference/endpoint/webhooks/post",
-              "api-reference/endpoint/webhooks/delete"
-            ]
+
           }
-        ]
-      }
-    ],
+        ],
     "global": {
       "anchors": [
         {
