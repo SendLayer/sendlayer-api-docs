@@ -1,0 +1,162 @@
+---
+title: 'Node.js'
+description: 'SendLayer Node.js SDK installation and usage'
+icon: 'node-js'
+---
+
+## Prerequisites
+Before getting started, you'll need to:
+1. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+Install the Node.js SDK using the command below:
+<CodeGroup>
+```bash npm
+npm install sendlayer
+```
+
+```bash yarn
+yarn add sendlayer
+```
+</CodeGroup>
+
+## Usage
+After the installation completes, you're ready to start integrating the SDK to your code. The SDK includes modules to send emails, manage webhooks and events.
+
+### Sending an Email
+
+```javascript
+import { NewEmail } from 'sendlayer';
+
+// Initialize the email client
+const sendlayer = new NewEmail('your-api-key');
+
+const params = {
+  from_email: 'sender@example.com',
+  to:'recipient@example.com', // or array of recipients
+  subject: 'Test Email',
+  text: 'This is a test email'
+}
+
+// Send a simple email
+const response = await sendlayer.send(params);
+
+console.log('Email sent! Message ID:', response.MessageID);
+```
+
+Sending Emails with additional parameters
+
+```javascript
+import { NewEmail } from 'sendlayer';
+
+sendlayer = new NewEmail('your-sendlayer-api-key')
+
+params = {
+  from_email: 'sender@example.com',
+  from_name: 'Sender Name', // optional
+  to: [
+    { email: 'recipient1@example.com', name: 'Recipient 1' },
+    { email: 'recipient2@example.com', name: 'Recipient 2' }
+  ], 
+  subject: 'Test Email',
+  html: '<p>This is a test email</p>', // or text for plain text emails
+  text: 'This is a test email', // optional, for plain text version
+  cc: [{ email: 'cc@example.com', name: 'CC Recipient' }], // optional
+  bcc: [{ email: 'bcc@example.com', name: 'BCC Recipient' }], // optional
+  replyTo: [{ email: 'reply@example.com', name: 'Reply To' }], // optional
+  tags: ['tag1', 'tag2'], // optional
+  headers: { 'X-Custom-Header': 'value' }, // optional
+  attachments: [{ // optional
+    path: 'path/to/file.pdf',
+    type: 'application/pdf',
+  }]
+}
+
+// Send an email with additional parameters
+const response = await sendlayer.send(params);
+
+console.log('Email Sent successfully! MessageID:', response.MessageID)
+```
+
+### Events
+
+```javascript
+import { Events } from 'sendlayer';
+
+// Initialize the events client
+const sendlayer = new Events('your-api-key');
+
+// Get all events
+const events = await sendlayer.getAll();
+
+console.log('All Events:', events);
+
+// Get events with optional filters
+
+const params = {
+  startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // optional, last 24 hours
+  endDate: new Date(), // optional
+  event: 'sent', // optional, filter by event type
+}
+const filteredEvents = await sendlayer.get(params);
+
+console.log('Filtered Events', filteredEvents)
+```
+
+### Managing Webhooks
+
+```javascript
+import { Webhooks } from 'sendlayer';
+
+// Initialize the webhooks client
+const sendlayer = new Webhooks('your-api-key');
+
+// Create a webhook
+// Webhook event options: bounce, click, open, unsubscribe, complaint, delivery
+
+const params = {
+  url: 'https://your-domain.com/webhook',
+  event: 'open'
+}
+
+const webhook = await sendlayer.create(params);
+console.log('Webhook created:', webhook);
+
+// Get all webhooks
+const webhooks = await sendlayer.getAll();
+console.log('Webhooks:', webhooks);
+
+// Delete a webhook
+await sendlayer.delete(123);
+```
+
+## Error Handling
+
+The SDK throws the following error types:
+
+- `SendLayerAuthenticationError`: Invalid API key
+- `SendLayerValidationError`: Invalid request parameters
+- `SendLayerAPIError`: API request failed
+- `SendLayerError`: Unexpected errors
+
+```javascript
+try {
+  await sendlayer.send({
+    from_email: 'sender@example.com',
+    to: 'recipient@example.com',
+    subject: 'Test Email'
+  });
+
+} catch (error) {
+  if (error.name === 'SendLayerAuthenticationError') {
+    console.error('Invalid API key');
+  } else if (error.name === 'SendLayerValidationError') {
+    console.error('Invalid parameters:', error.message);
+  } else if (error.name === 'SendLayerAPIError') {
+    console.error('API error:', error.message);
+  } else {
+    console.error('Unexpected error:', error.message);
+  }
+}
+```
