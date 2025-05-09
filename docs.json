@@ -207,5 +207,10 @@
         ]
       }
     ]
-  }
+  },
+  "integrations": {
+    "ga4": {
+        "measurementId": "G-22H4JY4KNJ"
+    }
+}
 }
