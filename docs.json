@@ -12,6 +12,13 @@
     "groups": "Developer Guides",
         "pages": [
           {
+            "group": "Quick Start",
+            "pages": [
+              "quickstart/introduction"
+            ]
+
+          },
+          {
             "group": "API Reference",
             "pages": [
               {
