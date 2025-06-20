@@ -10,7 +10,8 @@ Before getting started, you'll need to:
 2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
 
 ## Installation
-Install the Node.js SDK using the command below:
+Install the SendLayer Node.js SDK using the command:
+
 <CodeGroup>
 ```bash npm
 npm install sendlayer
@@ -25,138 +26,315 @@ yarn add sendlayer
 After the installation completes, you're ready to start integrating the SDK to your code. The SDK includes modules to send emails, manage webhooks and events.
 
 ### Sending an Email
+Create a new `.js` file or edit an existing one. Then import the `SendLayer` module. Once done, you'll need to initialize the module with your SendLayer API key.
 
-```javascript
-import { NewEmail } from 'sendlayer';
+```javascript sendEmail.js
+import { SendLayer } from 'sendlayer';
 
-// Initialize the email client
-const sendlayer = new NewEmail('your-api-key');
+// Initialize the email client with your API key
+const sendlayer = new SendLayer('your-api-key');
 
-const params = {
+// Send an email
+const response = await sendlayer.Emails.send({
+  to: 'recipient@example.com',
   from_email: 'sender@example.com',
-  to:'recipient@example.com', // or array of recipients
   subject: 'Test Email',
   text: 'This is a test email'
-}
+});
 
-// Send a simple email
-const response = await sendlayer.send(params);
-
-console.log('Email sent! Message ID:', response.MessageID);
+console.log('Email sent! Message ID:', response);
 ```
 
-Sending Emails with additional parameters
+#### Sending HTML Emails
+To send HTML emails, simply include the `html` parameter to the `send()` method.
 
-```javascript
-import { NewEmail } from 'sendlayer';
+```javascript sendEmail.js
+import { SendLayer } from 'sendlayer';
 
-sendlayer = new NewEmail('your-sendlayer-api-key')
+const sendlayer = new SendLayer('your-api-key');
 
-params = {
+// Send an email
+const response = await sendlayer.Emails.send({
+  to: 'recipient@example.com',
   from_email: 'sender@example.com',
-  from_name: 'Sender Name', // optional
+  subject: 'Test Email',
+  html: '<html><body><p>This is a test email sent with the <a href="https://sendlayer.com">SendLayer</a> API!</p></body></html>'
+});
+```
+<Note>You can include the `text` parameter to have a plain text and HTML version of your email message</Note>
+
+#### Sending to Multiple Recipients
+You can send emails to multiple recipients including `"Cc"` and `"BCC"` email addresses.
+
+```javascript sendEmail.js
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Send to multiple recipients
+const response = await sendlayer.Emails.send({
   to: [
     { email: 'recipient1@example.com', name: 'Recipient 1' },
     { email: 'recipient2@example.com', name: 'Recipient 2' }
-  ], 
-  subject: 'Test Email',
-  html: '<p>This is a test email</p>', // or text for plain text emails
-  text: 'This is a test email', // optional, for plain text version
-  cc: [{ email: 'cc@example.com', name: 'CC Recipient' }], // optional
-  bcc: [{ email: 'bcc@example.com', name: 'BCC Recipient' }], // optional
-  replyTo: [{ email: 'reply@example.com', name: 'Reply To' }], // optional
-  tags: ['tag1', 'tag2'], // optional
-  headers: { 'X-Custom-Header': 'value' }, // optional
-  attachments: [{ // optional
+  ],
+  from_email: 'sender@example.com',
+  from_name: 'Sender Name',
+  subject: 'Complex Email',
+  html: '<p>This is a <strong>test email</strong>!</p>',
+  text: 'This is a test email!',
+  cc: [{ email: 'cc@example.com', name: 'CC Recipient' }],
+  bcc: [{ email: 'bcc@example.com', name: 'BCC Recipient' }],
+  replyTo: [{ email: 'reply@example.com', name: 'Reply To' }],
+});
+```
+Each recipient field is an array containing the recipient's `name` and `email` as objects.
+
+<Note>There are limits to the number of email recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide to learn more.</Note>
+
+#### Including Attachments
+You can include attachments to your email message by adding the `attachments` parameter to the email payload.
+
+```javascript sendEmail.js
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Send email with attachments
+const response = await sendlayer.Emails.send({
+  to: [
+    { email: 'recipient1@example.com', name: 'Recipient' }
+  ],
+  from_email: 'sender@example.com',
+  from_name: 'Sender Name',
+  subject: 'Complex Email',
+  html: '<p>This is a <strong>test email</strong>!</p>',
+  attachments: [{
     path: 'path/to/file.pdf',
     type: 'application/pdf',
   }]
-}
-
-// Send an email with additional parameters
-const response = await sendlayer.send(params);
-
-console.log('Email Sent successfully! MessageID:', response.MessageID)
+});
 ```
+<Warning>The maximum email size SendLayer allows is 10MB. This includes both the message as well as attachment files.</Warning>
 
-### Events
+Simply replace the `path` parameter with the path to the attachment file you wish to attach and specify the correct `type`.
 
-```javascript
-import { Events } from 'sendlayer';
+SendLayer SDK supports both local and remote file attachments and allows you to add multiple attachment files. See our tutorial to learn more about [attaching files to emails](/guides/send-email-with-attachments).
 
-// Initialize the events client
-const sendlayer = new Events('your-api-key');
+#### Email Parameters
+Below is a table containing the supported parameters for sending emails in Node.js using SendLayer SDK.
 
-// Get all events
-const events = await sendlayer.getAll();
-
-console.log('All Events:', events);
-
-// Get events with optional filters
-
-const params = {
-  startDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // optional, last 24 hours
-  endDate: new Date(), // optional
-  event: 'sent', // optional, filter by event type
-}
-const filteredEvents = await sendlayer.get(params);
-
-console.log('Filtered Events', filteredEvents)
-```
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `to` | `string` or `array` | Yes | Email address(es) of the recipient(s). Can be a single email string or an array of objects with 'email' and 'name' keys |
+| `from_email` | `string` | Yes | Email address of the sender |
+| `from_name` | `string` | No | Name of the sender |
+| `subject` | `string` | Yes | Subject line of the email |
+| `text` | `string` | No | Plain text version of the email content |
+| `html` | `string` | No | HTML version of the email content |
+| `cc` | `array` | No | Array of objects containing CC recipient email addresses and names |
+| `bcc` | `array` | No | Array of objects containing BCC recipient email addresses and names |
+| `replyTo` | `array` | No | Array of objects containing reply-to email addresses and names |
+| `tags` | `array` | No | Array of strings for tagging emails |
+| `headers` | `object` | No | Object containing custom headers |
+| `attachments` | `array` | No | Array of objects containing file paths and MIME types for attachments |
 
 ### Managing Webhooks
+With the SendLayer Node.js SDK, you can create new webhook, view all webhooks you've created and also delete a specific webhook.
 
-```javascript
-import { Webhooks } from 'sendlayer';
+#### Creating a New Webhook
+To create a new webhook, you'll need to first import the SendLayer module and initialize it with your API key.
 
-// Initialize the webhooks client
-const sendlayer = new Webhooks('your-api-key');
+Then call the `Webhooks.create()` method and specify the required parameters. This method requires the `url` and `event` parameters.
 
-// Create a webhook
-// Webhook event options: bounce, click, open, unsubscribe, complaint, delivery
+```javascript webhooks.js
+import { SendLayer } from 'sendlayer';
 
-const params = {
+const sendlayer = new SendLayer('your-api-key');
+
+params = {
   url: 'https://your-domain.com/webhook',
   event: 'open'
 }
 
-const webhook = await sendlayer.create(params);
-console.log('Webhook created:', webhook);
+// Create a webhook
+const webhook = await sendlayer.Webhooks.create(params);
+```
+The `event` parameter is constrained to the following options:
+- bounce
+- click
+- open
+- unsubscribe
+- complaint
+- delivery
+
+Example success response for new webhook:
+
+```json
+{
+   "NewWebhookID": 23718
+}
+```
+
+#### Getting All Webhooks
+To view all the webhooks you've created, use the `Webhooks.get()` method.
+
+```javascript webhooks.js
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
 
 // Get all webhooks
-const webhooks = await sendlayer.getAll();
-console.log('Webhooks:', webhooks);
+const webhooks = await sendlayer.Webhooks.get();
+```
+
+Here is an example response:
+```json
+{
+  "Webhooks": [
+    {
+      "WebhookID": "23718",
+      "CreatedAt": "2025-04-11 09:43:07",
+      "UpdatedAt": "2025-04-11 09:43:07", 
+      "Status": "Enabled",
+      "WebhookURL": "http://example.com/webhook",
+      "Event": "delivered",
+      "LastResponseCode": "0",
+      "LastResponseBody": "",
+      "LastResponseAt": "0000-00-00 00:00:00",
+      "LastResponseTryCounter": "0"
+    }
+  ]
+}
+```
+
+#### Deleting a Webhook
+To delete a specific webhook, use the `Webhooks.delete()` method. This method accepts one required parameter `webhookId` that needs to be a number.
+
+<Warning>Deleting a webhook cannot be undone. You won't be able to recover or access your webhook after deleting it.</Warning>
+
+```javascript webhooks.js
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
 
 // Delete a webhook
-await sendlayer.delete(123);
+const webhookId = 23718;
+await sendlayer.Webhooks.delete(webhookId);
 ```
+
+#### Webhooks Parameters
+The table below contains details about the supported parameters in the `Webhooks` module.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | `string` | Yes | The webhook endpoint URL where events will be sent |
+| `event` | `string` | Yes | The type of event to listen for. Options: bounce, click, open, unsubscribe, complaint, delivery |
+| `webhookId` | `number` | Yes | Unique identifier for the webhook (used in delete operation) |
+
+### Retrieving Email Events
+You can view all events connected to your API key.
+
+#### Getting All Events
+To get started, import the SendLayer module and initialize it with your API key. Then call the `Events.get()` method to retrieve all events.
+
+<Note>The `Events.get()` method retrieves the top 5 events in your account if no filter parameter is specified.</Note>
+
+```javascript events.js
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Get all events
+const events = await sendlayer.Events.get();
+```
+Example response:
+```json
+{
+  "totalRecords": 5,
+  "events": [
+    {
+      "Event": "delivered",
+      "LoggedAt": 1746340896,
+      "LogLevel": "info",
+      "Message": {
+        "Headers": {
+          "MessageId": "06e4491f-fc5a-49cb-bc57-xxxxxx",
+          "From": [["", "sender@example.com"]],
+          "ReplyTo": [],
+          "To": [["", "recipient@example.com"]],
+          "Cc": [],
+          "Bcc": []
+        },
+        "Size": 2004,
+        "Transport": "api"
+      },
+      "Recipient": "recipient@example.com",
+      "Reason": "Email has been delivered."
+    }
+  ]
+}
+```
+
+#### Filtering Events
+The `Events.get()` method in the `SendLayer` module accepts some optional parameters. These parameters can be used to filter the API response. Here is an example:
+
+```javascript events.js
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Filter events for the last 4 hours
+const events = await sendlayer.Events.get({
+  startDate: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+  endDate: new Date(), // current time
+  event: 'opened'
+});
+```
+
+#### Events Parameters
+The table below contains details about the available parameters in the `Events` module.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `startDate` | `Date` | No | Start date for filtering events |
+| `endDate` | `Date` | No | End date for filtering events |
+| `event` | `string` | No | Filter the API request by the type of event. Supported events include: `accepted`, `rejected`, `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `failed` |
+| `messageId` | `string` | No | Filter by the email `MessageId` |
+| `startFrom` | `number` | No | Specify a starting number for the email filter |
+| `retrieveCount` | `number` | No | This parameter controls the number of event records that'll be displayed. It defaults to 5 if none is specified |
 
 ## Error Handling
 
-The SDK throws the following error types:
-
-- `SendLayerAuthenticationError`: Invalid API key
-- `SendLayerValidationError`: Invalid request parameters
-- `SendLayerAPIError`: API request failed
-- `SendLayerError`: Unexpected errors
+The SDK provides custom error types (`SendLayerError`, `SendLayerAPIError`) for better error handling. You can use try/catch blocks to handle errors when sending emails:
 
 ```javascript
-try {
-  await sendlayer.send({
-    from_email: 'sender@example.com',
-    to: 'recipient@example.com',
-    subject: 'Test Email'
-  });
+import { SendLayer, SendLayerError, SendLayerAPIError } from 'sendlayer';
 
+const sendlayer = new SendLayer('your-api-key');
+
+try {
+  const response = await sendlayer.Emails.send({
+    to: 'recipient@example.com',
+    from_email: 'sender@example.com',
+    subject: 'Test Email',
+    text: 'This is a test email'
+  });
 } catch (error) {
-  if (error.name === 'SendLayerAuthenticationError') {
-    console.error('Invalid API key');
-  } else if (error.name === 'SendLayerValidationError') {
-    console.error('Invalid parameters:', error.message);
-  } else if (error.name === 'SendLayerAPIError') {
+  if (error.name === 'SendLayerAPIError') {
     console.error('API error:', error.message);
   } else {
-    console.error('Unexpected error:', error.message);
+    console.error('Error:', error.message);
   }
 }
 ```
+
+Here is an example error response:
+
+```bash
+Error: Invalid event name - 'opened' is not a valid event name
+```
+
+## More Examples
+<Card title="SendLayer Node.js SDK" icon="github" href="https://github.com/SendLayer/sendlayer-node" arrow="true" cta="View more examples">
+  View more details and examples on GitHub.
+</Card>
