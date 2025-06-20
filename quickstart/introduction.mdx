@@ -29,10 +29,10 @@ Once, you've installed the SDK, you can import it directly into your codebase an
 
 <CodeGroup>
 ```javascript JavaScript
-import { NewEmail } from 'sendlayer';
+import { SendLayer } from 'sendlayer';
 
 // Initialize the email client
-const sendlayer = new NewEmail('your-api-key');
+const sendlayer = new SendLayer('your-api-key');
 
 const params = {
   from_email: 'sender@example.com',
@@ -42,17 +42,17 @@ const params = {
 }
 
 // Send a simple email
-const response = await sendlayer.send(params);
+const response = await sendlayer.Emails.send(params);
 ```
 
 ```python Python
-from sendlayer import NewEmail
+from sendlayer import SendLayer
 
 # Initialize the email client with your API key
-sendlayer = NewEmail("your-api-key")
+sendlayer = SendLayer("your-api-key")
 
 # Send an email
-response = sendlayer.send(
+response = sendlayer.Emails.send(
     to="recipient@example.com",
     from_email="sender@example.com",
     subject="Test Email",
@@ -83,9 +83,9 @@ curl --request POST \
 ```
 </CodeGroup>
 
-SendLayer API also allows you to send emails to [multiple recipients]('/guides/send-email-to-multiple-recipients), include BCC and CC addresses, [attach files]('/guides/send-email-with-attachments) to your email messages. 
+SendLayer API also allows you to send emails to [multiple recipients](/guides/send-email-to-multiple-recipients), include BCC and CC addresses, [attach files](/guides/send-email-with-attachments) to your email messages. 
 
-<Note>See our guide to learn more about [sending emails using SendLayer API]('/guides/send-email').</Note>
+<Note>See our guide to learn more about [sending emails using SendLayer API](/guides/send-email).</Note>
 
 ## Client SDKs
 SendLayer offers SDK libraries for popular programming languages that simplify the process of integrating with the API. We currently offer/support the following SDKs:
