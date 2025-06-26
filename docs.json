@@ -9,42 +9,68 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "groups": "Developer Guides",
+        "pages": [
+          {
+            "group": "Quick Start",
+            "pages": [
+              "quickstart/introduction"
+            ]
 
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "API Documentation",
-            "pages": [
-              "api-reference/introduction",
-              "api-reference/rate-limit",
-              "api-reference/error-codes"
-            ]
           },
           {
-            "group": "Email",
+            "group": "API Reference",
             "pages": [
-              "api-reference/endpoint/email"
+              {
+                "group": "Getting Started",
+                "pages":[
+                  "api-reference/introduction",
+                  "api-reference/rate-limit",
+                  "api-reference/error-codes"
+                ]
+              },
+              {
+                "group": "Email",
+                "pages": [
+                  "api-reference/endpoint/email"
+                ]
+              },
+              {
+                "group": "Events",
+                "pages": [
+                  "api-reference/endpoint/events"
+                ]
+              },
+              {
+                "group": "Webhooks",
+                "pages": [
+                  "api-reference/endpoint/webhooks/get",
+                  "api-reference/endpoint/webhooks/post",
+                  "api-reference/endpoint/webhooks/delete"
+                ]
+              }
             ]
+
           },
           {
-            "group": "Events",
+            "group": "SDK Usage",
             "pages": [
-              "api-reference/endpoint/events"
+              {
+                "group": "JavaScript",
+                "pages":[
+                  "sdks/nodejs/introduction"
+                ]
+              },
+              {
+                "group": "Python",
+                "pages": [
+                  "sdks/python/introduction"
+                ]
+              }
             ]
-          },
-          {
-            "group": "Webhooks",
-            "pages": [
-              "api-reference/endpoint/webhooks/get",
-              "api-reference/endpoint/webhooks/post",
-              "api-reference/endpoint/webhooks/delete"
-            ]
+
           }
-        ]
-      }
-    ],
+        ],
     "global": {
       "anchors": [
         {

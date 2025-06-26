@@ -1,0 +1,105 @@
+---
+title: 'Introduction'
+description: 'Getting Started With SendLayer API'
+icon: 'rocket'
+---
+
+## Overview
+SendLayer API provides a playground for developers to interact with various endpoints and send API requests. With the API, you can send emails, create and manage webhooks. Additionally, you can retrieve and monitor events related to your SendLayer account.
+
+## Getting Started
+Before you can use the SendLayer API, you'll need to [authorize your domain]('https://sendlayer.com/docs/authorizing-your-domain/). Domain verification is an important steps and it helps proves domain ownership and improves email deliverability.
+
+After authorizing your domain, you'll need to create/retrieve your [API key]('https://sendlayer.com/docs/managing-api-keys/'). An API key is used to authenticate API requests.
+
+### Installation
+Run the command below to install the SendLayer SDK:
+
+<CodeGroup>
+```bash javascript
+npm install sendlayer
+```
+```bash python
+pip install sendlayer
+```
+</CodeGroup>
+
+### Sending an Email
+Once, you've installed the SDK, you can import it directly into your codebase and interact with the API. Here's an example of how to send an email using the SendLayer API:
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+// Initialize the email client
+const sendlayer = new SendLayer('your-api-key');
+
+const params = {
+  from: 'sender@example.com',
+  to:'recipient@example.com', // or array of recipients
+  subject: 'Test Email',
+  text: 'This is a test email'
+}
+
+// Send a simple email
+const response = await sendlayer.Emails.send(params);
+```
+
+```python Python
+from sendlayer import SendLayer
+
+# Initialize the email client with your API key
+sendlayer = SendLayer("your-api-key")
+
+# Send an email
+response = sendlayer.Emails.send(
+    sender="sender@example.com",
+    to="recipient@example.com",
+    subject="Test Email",
+    text="This is a test email"
+)
+```
+
+```bash cURL
+curl --request POST \
+  --url https://console.sendlayer.com/api/v1/email \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "From": {
+    "name": "Paulie Paloma",
+    "email": "paulie@example.com"
+  },
+  "To": [
+    {
+      "name": "Pattie Paloma",
+      "email": "pattie@exampledomain.com"
+    }
+  ],
+  "Subject": "This is the email subject",
+  "ContentType": "HTML",
+  "HTMLContent": "<html><body><p>This is a test email sent with the <a href=\\\"https://sendlayer.com\\\">SendLayer</a> API!</p></body></html>",
+}'
+```
+</CodeGroup>
+
+SendLayer API also allows you to send emails to [multiple recipients](/guides/send-email-to-multiple-recipients), include BCC and CC addresses, [attach files](/guides/send-email-with-attachments) to your email messages. 
+
+<Note>See our guide to learn more about [sending emails using SendLayer API](/guides/send-email).</Note>
+
+## Client SDKs
+SendLayer offers SDK libraries for popular programming languages that simplify the process of integrating with the API. We currently offer/support the following SDKs:
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js" href="/sdks/nodejs">
+    Learn how to use the SendLayer's Node.js SDK
+  </Card>
+
+  <Card title="Python" icon="python" href="/sdks/python">
+    Learn how to use SendLayer's Python SDK.
+  </Card>
+</CardGroup>
+
+
+
+
+
