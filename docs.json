@@ -69,23 +69,6 @@
               }
             ]
 
-          },
-          {
-            "group": "Guides",
-            "pages": [
-              {
-                "group": "Sending Emails",
-                "pages":[
-                  "guides/send-email",
-                  "guides/send-email-with-attachments",
-                  "guides/send-email-to-multiple-recipients"
-                ]
-              },
-              "guides/get-events",
-              "guides/manage-webhooks",
-              "guides/error-handling"
-            ]
-
           }
         ],
     "global": {

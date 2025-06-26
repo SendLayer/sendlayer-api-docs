@@ -35,7 +35,7 @@ import { SendLayer } from 'sendlayer';
 const sendlayer = new SendLayer('your-api-key');
 
 const params = {
-  from_email: 'sender@example.com',
+  from: 'sender@example.com',
   to:'recipient@example.com', // or array of recipients
   subject: 'Test Email',
   text: 'This is a test email'
@@ -53,8 +53,8 @@ sendlayer = SendLayer("your-api-key")
 
 # Send an email
 response = sendlayer.Emails.send(
+    sender="sender@example.com",
     to="recipient@example.com",
-    from_email="sender@example.com",
     subject="Test Email",
     text="This is a test email"
 )
