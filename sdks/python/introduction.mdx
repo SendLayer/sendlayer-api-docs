@@ -32,7 +32,7 @@ sendlayer = SendLayer("your-api-key")
 # Send an email
 response = sendlayer.Emails.send(
     to="recipient@example.com",
-    from_email="sender@example.com",
+    sender="sender@example.com",
     subject="Test Email",
     text="This is a test email"
 )
@@ -50,7 +50,7 @@ sendlayer = SendLayer("your-api-key")
 # Send an email
 response = sendlayer.Emails.send(
     to="recipient@example.com",
-    from_email="sender@example.com",
+    sender="sender@example.com",
     subject="Test Email",
     html="<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>"
 )
@@ -73,8 +73,7 @@ response = sendlayer.Emails.send(
         {'email': 'recipient1@example.com', 'name': 'Recipient 1'},
         {'email': 'recipient2@example.com', 'name': 'Recipient 2'}
     ],
-    from_email='sender@example.com',
-    from_name='Sender Name',
+    sender={'email':'sender@example.com', 'name': 'Sender Name'},
     subject='Complex Email',
     html='<p>This is a <strong>test email</strong>!</p>',
     text='This is a test email!',
@@ -101,8 +100,7 @@ response = sendlayer.Emails.send(
     to=[
         {'email': 'recipient1@example.com', 'name': 'Recipient'},
     ],
-    from_email='sender@example.com',
-    from_name='Sender Name',
+    sender={'email': 'sender@example.com', 'name': 'Sender Name'},
     subject='Complex Email',
     html='<p>This is a <strong>test email</strong>!</p>',
     attachments=[{
@@ -125,8 +123,7 @@ Below is a table containing the supported parameters for sending emails in Pytho
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `to` | `string` or `list` | Yes | Email address(es) of the recipient(s). Can be a single email string or a list of dictionaries with 'email' and 'name' keys |
-| `from_email` | `string` | Yes | Email address of the sender |
-| `from_name` | `string` | No | Name of the sender |
+| `sender` | `string` or `dict` | Yes | Email address of the sender. Can be a single email string or a dictionary with 'email' and 'name' keys |
 | `subject` | `string` | Yes | Subject line of the email |
 | `text` | `string` | No | Plain text version of the email content |
 | `html` | `string` | No | HTML version of the email content |
