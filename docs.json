@@ -202,5 +202,13 @@
     "ga4": {
         "measurementId": "G-22H4JY4KNJ"
     }
-}
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
+  }
 }
