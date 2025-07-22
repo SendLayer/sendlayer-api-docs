@@ -63,7 +63,7 @@ response = sendlayer.Emails.send(
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
-  --header 'Authorization: Bearer <token>' \
+  --header 'Authorization: Bearer <apiKey>' \
   --header 'Content-Type: application/json' \
   --data '{
   "From": {
@@ -78,10 +78,12 @@ curl --request POST \
   ],
   "Subject": "This is the email subject",
   "ContentType": "HTML",
-  "HTMLContent": "<html><body><p>This is a test email sent with the <a href=\\\"https://sendlayer.com\\\">SendLayer</a> API!</p></body></html>",
+  "HTMLContent": "<html><body><p>This is a test email sent with the <a href=\\\"https://sendlayer.com\\\">SendLayer</a> API!</p></body></html>"
 }'
 ```
 </CodeGroup>
+
+<Warning>If you're using the `cURL` option, make sure to replace `<apiKey>` with your SendLayer API key in the request header.</Warning>
 
 SendLayer API also allows you to send emails to [multiple recipients](/guides/send-email-to-multiple-recipients), include BCC and CC addresses, [attach files](/guides/send-email-with-attachments) to your email messages. 
 
