@@ -1,0 +1,192 @@
+---
+title: 'Send Email to Multiple Recipients'
+description: 'How to send emails to multiple recipients using the SendLayer API'
+icon: 'users'
+---
+
+## Overview
+SendLayer allows you to send emails to multiple recipients in a single API call. This guide shows you how to send emails to multiple recipients using the SendLayer API, with examples for popular programming languages.
+
+## Prerequisites
+- [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Sending Emails to Multiple Recipients
+You can send emails to multiple recipients by providing an array of email addresses in the `to` field. Each recipient will receive the same email content.
+
+<Note>**Rate Limit**: When sending to multiple recipients, be aware of SendLayer's rate limits. We recommend sending to no more than 100 recipients per request for optimal performance. For larger lists, consider using our bulk sending features or sending in batches.</Note>
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+const params = {
+  from: 'sender@example.com',
+  to: ['recipient1@example.com', 'recipient2@example.com', 'recipient3@example.com'],
+  subject: 'Newsletter Update',
+  html: '<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer Node.js SDK</p></body></html>',
+};
+
+const response = await sendlayer.Emails.send(params);
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+params = {
+    "sender": "sender@example.com",
+    "to": ["recipient1@example.com", "recipient2@example.com", "recipient3@example.com"],
+    "subject": "Newsletter Update",
+    "html": "<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer's Python SDK</p></body></html>" 
+}
+
+response = sendlayer.Emails.send(**params)
+```
+
+```bash cURL
+curl --request POST \
+  --url https://console.sendlayer.com/api/v1/email \
+  --header 'Authorization: Bearer <apiKey>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "From": {
+    "name": "Newsletter Team",
+    "email": "newsletter@example.com"
+  },
+  "To": [
+    {
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    {
+      "name": "Jane Smith",
+      "email": "jane@example.com"
+    },
+    {
+      "name": "Bob Johnson",
+      "email": "bob@example.com"
+    }
+  ],
+  "Subject": "Weekly Newsletter",
+  "ContentType": "HTML",
+  "HTMLContent": "<html><body><h1>Weekly Newsletter</h1><p>This is our weekly newsletter sent to multiple subscribers using the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>"
+}'
+```
+</CodeGroup>
+
+<Warning>Replace `<apiKey>` with your actual SendLayer API key in the request header.</Warning>
+
+## Using CC and BCC
+You can also use CC (Carbon Copy) and BCC (Blind Carbon Copy) to send emails to additional recipients. CC recipients will be visible to all recipients, while BCC recipients will be hidden from other recipients.
+
+<CodeGroup>
+```javascript JavaScript
+const params = {
+  from: 'sender@example.com',
+  to: ['recipient1@example.com', 'recipient2@example.com'],
+  cc: ['cc1@example.com', 'cc2@example.com'],
+  bcc: ['bcc1@example.com', 'bcc2@example.com'],
+  subject: 'Meeting Invitation',
+  html: '<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>',
+};
+```
+
+```python Python
+params = {
+    "sender": "sender@example.com",
+    "to": ["recipient1@example.com", "recipient2@example.com"],
+    "cc": ["cc1@example.com", "cc2@example.com"],
+    "bcc": ["bcc1@example.com", "bcc2@example.com"],
+    "subject": "Meeting Invitation",
+    "html": "<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>"
+}
+```
+</CodeGroup>
+
+## Including Names and Email Addresses
+You can include both names and email addresses for senders and recipients to make your emails more professional and personal. This is especially useful for newsletters, announcements, or any communication where you want to display the sender's name.
+
+<CodeGroup>
+```javascript JavaScript
+const params = {
+  from: {
+    name: 'John Smith',
+    email: 'john@example.com'
+  },
+  to: [
+    {
+      name: 'Alice Johnson',
+      email: 'alice@example.com'
+    },
+    {
+      name: 'Bob Wilson',
+      email: 'bob@example.com'
+    },
+    {
+      name: 'Carol Davis',
+      email: 'carol@example.com'
+    }
+  ],
+  subject: 'Team Update',
+  html: '<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>',
+};
+```
+
+```python Python
+params = {
+    "sender": {
+        "name": "John Smith",
+        "email": "john@example.com"
+    },
+    "to": [
+        {
+            "name": "Alice Johnson",
+            "email": "alice@example.com"
+        },
+        {
+            "name": "Bob Wilson", 
+            "email": "bob@example.com"
+        },
+        {
+            "name": "Carol Davis",
+            "email": "carol@example.com"
+        }
+    ],
+    "subject": "Team Update",
+    "html": "<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>"
+}
+```
+</CodeGroup>
+
+<Note>See our [Send Email guide](/guides/send-email) for basic email sending instructions.</Note>
+
+## FAQ
+<AccordionGroup>
+  <Accordion title="What is the maximum number of recipients I can send to?">
+    SendLayer has specific limits for multiple recipients regardless of your account type:
+    - **Send To:** 10 email addresses
+    - **CC:** 10 email addresses  
+    - **BCC:** 5 email addresses
+    
+    For larger lists, consider using our bulk sending features or sending in batches. See our [Rate Limits](/api-reference/rate-limit) documentation for complete details on all API limits.
+  </Accordion>
+  <Accordion title="Can I personalize emails for each recipient?">
+    Yes, you can personalize emails by using merge tags or by sending individual emails in a loop.
+  </Accordion>
+  <Accordion title="What's the difference between CC and BCC?">
+    CC (Carbon Copy) recipients are visible to all other recipients in the email. BCC (Blind Carbon Copy) recipients are hidden from other recipients, making them ideal for privacy-sensitive communications.
+  </Accordion>
+  <Accordion title="How do I handle bounced emails for multiple recipients?">
+    SendLayer provides webhook notifications for bounced emails. You can set up webhooks to receive real-time notifications when emails bounce, allowing you to clean your recipient lists.
+  </Accordion>
+  <Accordion title="Can I track email opens and clicks for multiple recipients?">
+    Yes, SendLayer provides tracking capabilities for email opens and clicks. You can enable tracking in your email parameters and receive webhook notifications for engagement events.
+  </Accordion>
+  <Accordion title="What should I do if some recipients don't receive the email?">
+    Check your domain authorization, verify your API key, and review the response from the API for any error messages. You can also consult the SendLayer dashboard for delivery status and logs for each recipient.
+  </Accordion>
+</AccordionGroup>
