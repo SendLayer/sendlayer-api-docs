@@ -1,0 +1,135 @@
+---
+title: 'Send Email'
+description: 'How to send emails using the SendLayer API'
+icon: 'envelope-open'
+---
+
+## Overview
+SendLayer makes it easy to send transactional and marketing emails via a simple API. This guide walks you through sending your first email using the SendLayer API, with examples for Node.js, Python, and cURL.
+
+## Prerequisites
+- [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Sending an Email
+After setting up your domain and API key, you can send emails using the SDK or directly via HTTP requests.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+const params = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com', // or array of recipients
+  subject: 'Test Email',
+  text: 'This is a test email sent using SendLayer Node.js SDK',
+};
+
+const response = await sendlayer.Emails.send(params);
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+params = {
+    "sender": "sender@example.com",
+    "to": "recipient@example.com",
+    "subject": "Sending a Test Email",
+    "text": "This is a test email sent using SendLayer's Python SDK" 
+}
+
+response = sendlayer.Emails.send(**params)
+```
+
+```bash cURL
+curl --request POST \
+  --url https://console.sendlayer.com/api/v1/email \
+  --header 'Authorization: Bearer <apiKey>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "From": {
+    "name": "Paulie Paloma",
+    "email": "paulie@example.com"
+  },
+  "To": [
+    {
+      "name": "Pattie Paloma",
+      "email": "pattie@exampledomain.com"
+    }
+  ],
+  "Subject": "This is the email subject",
+  "ContentType": "Text",
+  "PlainContent": "This is a test email sent with the SendLayer API!"
+}'
+```
+</CodeGroup>
+
+<Warning>Replace `<apiKey>` with your actual SendLayer API key in the request header.</Warning>
+
+You can also send to [multiple recipients](/guides/send-email-to-multiple-recipients), add CC/BCC, and [attach files](/guides/send-email-with-attachments).
+
+SendLayer API also let's you send HTML emails. This can be useful if you'd like to use a template to send welcome emails to new users. 
+
+To send HTML emails, simply update the `params` variable to include the `html` object. Then enter your HTML email as a string.
+
+<CodeGroup>
+```javascript JavaScript
+const params = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com', // or array of recipients
+  subject: 'Test Email',
+  html: '<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>',
+};
+```
+
+```python Python
+params = {
+    "sender": "sender@example.com",
+    "to": "recipient@example.com",
+    "subject": "Sending a Test Email",
+    "html": "<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>" 
+}
+```
+
+```bash cURL
+  --data '{
+  "From": {
+    "name": "Paulie Paloma",
+    "email": "paulie@example.com"
+  },
+  "To": [
+    {
+      "name": "Pattie Paloma",
+      "email": "pattie@exampledomain.com"
+    }
+  ],
+  "Subject": "This is the email subject",
+  "ContentType": "HTML",
+  "HTMLContent": "<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>"
+}'
+```
+</CodeGroup>
+
+
+## FAQ
+<AccordionGroup>
+  <Accordion title="Why do I need to authorize my domain?">
+    Authorizing your domain proves ownership and improves email deliverability by reducing the likelihood of your emails being marked as spam.
+  </Accordion>
+  <Accordion title="Where do I find my API key?">
+    You can create or retrieve your API key from your SendLayer dashboard under the **Settings » API Keys** section.
+  </Accordion>
+  <Accordion title="Can I send emails to multiple recipients?">
+    Yes, you can provide an array of email addresses in the `to` field or see our [guide](/guides/send-email-to-multiple-recipients) for more details.
+  </Accordion>
+  <Accordion title="How do I attach files to my email?">
+    See our [attachments guide](/guides/send-email-with-attachments) for instructions on sending emails with attachments.
+  </Accordion>
+  <Accordion title="What should I do if my email is not delivered?">
+    Check your domain authorization, verify your API key, and review the response from the API for any error messages. You can also consult the SendLayer dashboard for delivery status and logs.
+  </Accordion>
+</AccordionGroup>

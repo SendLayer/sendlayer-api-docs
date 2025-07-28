@@ -1,0 +1,211 @@
+---
+title: 'Send Email with Attachments'
+description: 'How to send emails with attachments using the SendLayer API'
+icon: 'paperclip'
+---
+
+## Overview
+SendLayer allows you to send emails with file attachments. This guide shows you how to send emails with attachments using the SendLayer API, with examples for popular programming languages.
+
+## Prerequisites
+- [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Sending Emails with Attachments
+You can attach files to your emails by including an `attachments` array in your email parameters. The SendLayer SDKs handle file encoding automatically, so you only need to provide the file path and type.
+
+<Note>The maximum file size per email is **10 MB**, including both the email content and all attachments combined.</Note>
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+const params = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Document Attachment',
+  html: '<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>',
+  attachments: [
+    {
+      path: './path/to/document.pdf',
+      type: 'application/pdf'
+    }
+  ]
+};
+
+const response = await sendlayer.Emails.send(params);
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+params = {
+    "sender": "sender@example.com",
+    "to": "recipient@example.com",
+    "subject": "Document Attachment",
+    "html": "<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>",
+    "attachments": [
+        {
+            "path": "./path/to/document.pdf",
+            "type": "application/pdf"
+        }
+    ]
+}
+
+response = sendlayer.Emails.send(**params)
+```
+
+```bash cURL
+curl --request POST \
+  --url https://console.sendlayer.com/api/v1/email \
+  --header 'Authorization: Bearer <apiKey>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "From": {
+    "name": "Document Sender",
+    "email": "sender@example.com"
+  },
+  "To": [
+    {
+      "name": "Recipient Name",
+      "email": "recipient@example.com"
+    }
+  ],
+  "Subject": "Document Attachment",
+  "ContentType": "HTML",
+  "HTMLContent": "<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>",
+  "Attachments": [
+    {
+      "Filename": "document.pdf",
+      "Content": "JVBERi0xLjQKJcOkw7zDtsO...",
+      "Type": "application/pdf"
+    }
+  ]
+}'
+```
+</CodeGroup>
+
+<Warning>Replace `<apiKey>` with your actual SendLayer API key in the request header. The `Content` field in the cURL example should contain the actual base64-encoded file content.</Warning>
+
+## Multiple Attachments
+You can attach multiple files to a single email by adding more objects to the `attachments` array.
+
+<CodeGroup>
+```javascript JavaScript
+const params = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Multiple Attachments',
+  html: '<html><body><h1>Multiple Files Attached</h1><p>Please find the attached documents.</p></body></html>',
+  attachments: [
+    {
+      path: './path/to/document.pdf',
+      type: 'application/pdf'
+    },
+    {
+      path: './path/to/image.jpg',
+      type: 'image/jpeg'
+    }
+  ]
+};
+```
+
+```python Python
+params = {
+    "sender": "sender@example.com",
+    "to": "recipient@example.com",
+    "subject": "Multiple Attachments",
+    "html": "<html><body><h1>Multiple Files Attached</h1><p>Please find the attached documents.</p></body></html>",
+    "attachments": [
+        {
+            "path": "./path/to/document.pdf",
+            "type": "application/pdf"
+        },
+        {
+            "path": "./path/to/image.jpg",
+            "type": "image/jpeg"
+        }
+    ]
+}
+```
+</CodeGroup>
+
+## Local and Remote File Attachments
+SendLayer SDKs support both local and remote file attachments. For local files, you'll need to provide the path to the file you intend to attach. For remote files, simply provide the URL.
+
+<CodeGroup>
+```javascript JavaScript
+const params = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Mixed Attachments',
+  html: '<html><body><h1>Files from different sources</h1><p>Attaching both local and remote files.</p></body></html>',
+  attachments: [
+    {
+      path: './local-document.pdf',
+      type: 'application/pdf'
+    },
+    {
+      path: 'https://example.com/remote-image.jpg',
+      type: 'image/jpeg'
+    }
+  ]
+};
+```
+
+```python Python
+params = {
+    "sender": "sender@example.com",
+    "to": "recipient@example.com",
+    "subject": "Mixed Attachments",
+    "html": "<html><body><h1>Files from different sources</h1><p>Attaching both local and remote files.</p></body></html>",
+    "attachments": [
+        {
+            "path": "./local-document.pdf",
+            "type": "application/pdf"
+        },
+        {
+            "path": "https://example.com/remote-image.jpg",
+            "type": "image/jpeg"
+        }
+    ]
+}
+```
+</CodeGroup>
+
+## Supported File Types
+SendLayer supports a wide range of file types for attachments. Here are some common MIME types:
+
+- **Documents**: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+- **Spreadsheets**: `application/vnd.ms-excel`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- **Images**: `image/jpeg`, `image/png`, `image/gif`
+- **Text Files**: `text/plain`, `text/csv`
+- **Archives**: `application/zip`, `application/x-rar-compressed`
+
+<Note>See our [Send Email guide](/guides/send-email) for basic email sending instructions.</Note>
+
+## FAQ
+<AccordionGroup>
+  <Accordion title="What is the maximum file size for attachments?">
+    The maximum file size per email is **10 MB**, which includes both the email content and all attachments combined. If you need to send larger files, consider using cloud storage services and including download links in your emails.
+  </Accordion>
+  <Accordion title="How many files can I attach to a single email?">
+    You can attach multiple files to a single email, but the total size of all attachments plus the email content must not exceed 10 MB. There is no specific limit on the number of files, only the total size limit.
+  </Accordion>
+  <Accordion title="What file formats are supported?">
+    SendLayer supports most common file formats including PDFs, Word documents, Excel spreadsheets, images (JPEG, PNG, GIF), text files, and compressed archives. The file type should be specified using the appropriate MIME type.
+  </Accordion>
+  <Accordion title="How do I attach files with the SDK?">
+    The SendLayer SDKs handle file encoding automatically. Simply provide the file path (for local files) or URL (for remote files) along with the MIME type. The SDK will read and encode the file for you.
+  </Accordion>
+  <Accordion title="Can I attach files when sending to multiple recipients?">
+    Yes, you can attach files when sending to multiple recipients. The same attachment will be sent to all recipients in the email. See our [Send Email to Multiple Recipients](/guides/send-email-to-multiple-recipients) guide for more details.
+  </Accordion>
+  <Accordion title="What should I do if my attachment is too large?">
+    If your attachment exceeds the 10 MB limit, consider compressing the file, using a cloud storage service and including a download link, or splitting the content into multiple emails with smaller attachments.
+  </Accordion>
+</AccordionGroup>

@@ -69,6 +69,26 @@
               }
             ]
 
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              {
+                "group": "Sending Emails",
+                "pages":[
+                  "guides/send-email",
+                  "guides/send-email-to-multiple-recipients",
+                  "guides/send-email-with-attachments"
+                ]
+              }
+            ]
+
+          },
+          {
+            "group": "Changelogs",
+            "pages": [
+              "changelog"
+            ]
           }
         ],
     "global": {
