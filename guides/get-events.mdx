@@ -1,0 +1,355 @@
+---
+title: 'Retrieving Email Events'
+description: 'Learn how to retrieve and filter email events using the SendLayer API'
+icon: 'activity'
+---
+
+## Overview
+The SendLayer API allows you to retrieve detailed information about email events such as deliveries, opens, clicks, bounces, and more. This guide shows you how to fetch these events and apply various filters to get the specific data you need.
+
+## Prerequisites
+- [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Retrieving All Events
+To get started, you can retrieve all events associated with your account. By default, this returns the most recent 5 events.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Get all events (defaults to 5 most recent)
+const events = await sendlayer.Events.get();
+console.log('Total records:', events.totalRecords);
+console.log('Events:', events.events);
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+# Get all events (defaults to 5 most recent)
+events = sendlayer.Events.get()
+print(f"Total records: {events['totalRecords']}")
+print(f"Events: {events['events']}")
+```
+
+```bash cURL
+curl --request GET \
+  --url https://console.sendlayer.com/api/v1/events \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+<Warning>Replace `<apiKey>` with your actual SendLayer API key in the request header.</Warning>
+
+### Example Response
+When you retrieve events, you'll receive data in this format:
+
+```json
+{
+  "TotalRecords": 5,
+  "Events": [
+    {
+      "Event": "delivered",
+      "LoggedAt": 1746340896,
+      "LogLevel": "info",
+      "Message": {
+        "Headers": {
+          "MessageId": "06e4491f-fc5a-49cb-bc57-xxxxxx",
+          "From": [["", "sender@example.com"]],
+          "ReplyTo": [],
+          "To": [["", "recipient@example.com"]],
+          "Cc": [],
+          "Bcc": []
+        },
+        "Size": 2004,
+        "Transport": "api"
+      },
+      "Recipient": "recipient@example.com",
+      "Reason": "Email has been delivered."
+    }
+  ]
+}
+```
+
+## Filtering Events
+You can apply various filters to narrow down the events you want to retrieve. This is useful for analyzing specific time periods, event types, or individual emails.
+
+### Filter by Date Range
+Retrieve events within a specific time period using Unix timestamps.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Filter events for the last 24 hours
+const startDate = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000); // 24 hours ago
+const endDate = Math.floor(Date.now() / 1000); // current time
+
+const events = await sendlayer.Events.get({
+  startDate: startDate,
+  endDate: endDate
+});
+```
+
+```python Python
+from sendlayer import SendLayer
+from datetime import datetime, timedelta
+
+sendlayer = SendLayer('your-api-key')
+
+# Filter events for the last 24 hours
+start_date = int((datetime.now() - timedelta(hours=24)).timestamp())
+end_date = int(datetime.now().timestamp())
+
+events = sendlayer.Events.get(
+    start_date=start_date,
+    end_date=end_date
+)
+```
+
+```bash cURL
+curl --request GET \
+  --url 'https://console.sendlayer.com/api/v1/events?StartDate=1746254496&EndDate=1746340896' \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+### Filter by Event Type
+Retrieve only specific types of events.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Get only opened events
+const openedEvents = await sendlayer.Events.get({
+  event: 'opened'
+});
+
+// Get only bounced events
+const bouncedEvents = await sendlayer.Events.get({
+  event: 'bounced'
+});
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+# Get only opened events
+opened_events = sendlayer.Events.get(event='opened')
+
+# Get only bounced events
+bounced_events = sendlayer.Events.get(event='bounced')
+```
+
+```bash cURL
+# Get opened events
+curl --request GET \
+  --url 'https://console.sendlayer.com/api/v1/events?Event=opened' \
+  --header 'Authorization: Bearer <apiKey>'
+
+# Get bounced events
+curl --request GET \
+  --url 'https://console.sendlayer.com/api/v1/events?Event=bounced' \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+### Filter by Message ID
+Retrieve events for a specific email using its Message ID.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Get events for a specific email
+const messageEvents = await sendlayer.Events.get({
+  messageId: '06e4491f-fc5a-49cb-bc57-xxxxxx'
+});
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+# Get events for a specific email
+message_events = sendlayer.Events.get(
+    message_id='06e4491f-fc5a-49cb-bc57-xxxxxx'
+)
+```
+
+```bash cURL
+curl --request GET \
+  --url 'https://console.sendlayer.com/api/v1/events?MessageID=06e4491f-fc5a-49cb-bc57-xxxxxx' \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+### Pagination and Result Limits
+Control how many events to retrieve and implement pagination.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Get 20 events starting from the 10th event
+const events = await sendlayer.Events.get({
+  startFrom: 10,
+  retrieveCount: 20
+});
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+# Get 20 events starting from the 10th event
+events = sendlayer.Events.get(
+    start_from=10,
+    retrieve_count=20
+)
+```
+
+```bash cURL
+curl --request GET \
+  --url 'https://console.sendlayer.com/api/v1/events?StartFrom=10&RetrieveCount=20' \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+## Combining Filters
+You can combine multiple filters to get very specific results.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+// Get opened events from the last 7 days, limited to 50 results
+const startDate = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000);
+const endDate = Math.floor(Date.now() / 1000);
+
+const events = await sendlayer.Events.get({
+  startDate: startDate,
+  endDate: endDate,
+  event: 'opened',
+  retrieveCount: 50
+});
+```
+
+```python Python
+from sendlayer import SendLayer
+from datetime import datetime, timedelta
+
+sendlayer = SendLayer('your-api-key')
+
+# Get opened events from the last 7 days, limited to 50 results
+start_date = int((datetime.now() - timedelta(days=7)).timestamp())
+end_date = int(datetime.now().timestamp())
+
+events = sendlayer.Events.get(
+    start_date=start_date,
+    end_date=end_date,
+    event='opened',
+    retrieve_count=50
+)
+```
+
+```bash cURL
+curl --request GET \
+  --url 'https://console.sendlayer.com/api/v1/events?StartDate=1745736096&EndDate=1746340896&Event=opened&RetrieveCount=50' \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+## Available Parameters
+The events API supports the following parameters for filtering and pagination:
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `startDate` | `number` | No | Unix timestamp for the start of the date range |
+| `endDate` | `number` | No | Unix timestamp for the end of the date range |
+| `event` | `string` | No | Filter by event type (accepted, rejected, failed, delivered, opened, clicked, unsubscribed, complained) |
+| `messageId` | `string` | No | Filter by specific email Message ID |
+| `startFrom` | `number` | No | Starting position for pagination (default: 0) |
+| `retrieveCount` | `number` | No | Number of events to retrieve (default: 5) |
+
+## Event Data Structure
+Each event contains detailed information about what happened to your email:
+
+```json
+{
+  "Event": "opened",
+  "LoggedAt": 1746340896,
+  "LogLevel": "info",
+  "Message": {
+    "Headers": {
+      "MessageId": "06e4491f-fc5a-49cb-bc57-xxxxxx",
+      "From": [["", "sender@example.com"]],
+      "ReplyTo": [],
+      "To": [["", "recipient@example.com"]],
+      "Cc": [],
+      "Bcc": []
+    },
+    "Size": 2004,
+    "Transport": "api"
+  },
+  "Recipient": "recipient@example.com",
+  "Reason": "Email opened.",
+  "Ip": "10.30.126.18",
+  "Geolocation": {
+    "City": "San Francisco",
+    "Region": "CA",
+    "Country": "US"
+  }
+}
+```
+
+### Event Fields Explained
+- **Event**: The type of event that occurred
+- **LoggedAt**: Unix timestamp when the event was logged
+- **LogLevel**: Log level (usually "info")
+- **Message**: Email message details including headers and metadata
+- **Recipient**: The email address of the recipient
+- **Reason**: Human-readable description of what happened
+- **Ip**: IP address where the event occurred (for opens/clicks)
+- **Geolocation**: Geographic location data (for opens/clicks)
+
+## Best Practices
+1. **Use Date Filters**: Always specify date ranges when retrieving events to avoid overwhelming results
+2. **Implement Pagination**: Use `startFrom` and `retrieveCount` for large datasets
+3. **Cache Results**: Store event data locally to avoid repeated API calls
+4. **Monitor Rate Limits**: Be mindful of API rate limits when making frequent requests
+5. **Error Handling**: Implement proper error handling for API failures
+6. **Regular Polling**: Set up regular intervals to check for new events
+
+## FAQ
+<AccordionGroup>
+  <Accordion title="How far back can I retrieve events?">
+    SendLayer stores event data for a limited time period. This varies by account and is subject to change. Contact support for specific retention details for your account.
+  </Accordion>
+  <Accordion title="How often should I check for new events?">
+    For real-time monitoring, check every few minutes. For batch processing, hourly or daily checks are usually sufficient.
+  </Accordion>
+  <Accordion title="What timezone are the timestamps in?">
+    All timestamps are in Unix timestamp format (seconds since epoch) and are in UTC timezone.
+  </Accordion>
+</AccordionGroup>
