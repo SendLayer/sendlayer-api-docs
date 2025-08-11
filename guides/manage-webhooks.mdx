@@ -1,0 +1,217 @@
+---
+title: 'Managing Webhooks'
+description: 'Learn how to create, retrieve, and delete webhooks using the SendLayer API'
+icon: 'webhook'
+---
+
+## Overview
+Webhooks are HTTP callbacks that allow SendLayer to notify your application in real-time when specific email events occur. Instead of polling the API to check for updates, webhooks automatically send data to your specified URL when events happen, such as when an email is opened, clicked, or bounced.
+
+## How Webhooks Work
+1. **Setup**: You create a webhook by providing a URL endpoint and specifying which events you want to monitor
+2. **Monitoring**: SendLayer monitors your email activity for the specified events
+3. **Notification**: When an event occurs, SendLayer sends an HTTP POST request to your webhook URL with event data
+4. **Processing**: Your application receives and processes the webhook data
+
+## Prerequisites
+- [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+- A publicly accessible webhook endpoint URL
+
+## Creating a Webhook
+To create a webhook, you need to specify the event type you want to monitor and the URL where SendLayer should send notifications.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+const params = {
+  url: 'https://your-domain.com/webhook',
+  event: 'open'
+};
+
+const response = await sendlayer.Webhooks.create(params);
+console.log('Webhook created with ID:', response.NewWebhookID);
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+params = {
+    "url": "https://your-domain.com/webhook",
+    "event": "open"
+}
+
+response = sendlayer.Webhooks.create(**params)
+print(f"Webhook created with ID: {response['NewWebhookID']}")
+```
+
+```bash cURL
+curl --request POST \
+  --url https://console.sendlayer.com/api/v1/webhooks \
+  --header 'Authorization: Bearer <apiKey>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "Event": "open",
+  "WebhookURL": "https://your-domain.com/webhook"
+}'
+```
+</CodeGroup>
+
+<Warning>Replace `<apiKey>` with your actual SendLayer API key in the request header.</Warning>
+
+### Available Event Types
+You can monitor the following email events:
+
+| Event | Description |
+|-------|-------------|
+| `delivery` | Email successfully delivered to recipient's inbox |
+| `open` | Recipient opened the email |
+| `click` | Recipient clicked a link in the email |
+| `bounce` | Email failed to deliver and bounced back |
+| `unsubscribe` | Recipient unsubscribed from emails |
+| `complaint` | Recipient marked email as spam |
+
+## Retrieving Webhooks
+You can retrieve all webhooks associated with your account to see their current status and configuration.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+const webhooks = await sendlayer.Webhooks.get();
+console.log('Webhooks:', webhooks.Webhooks);
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+webhooks = sendlayer.Webhooks.get()
+print("Webhooks:", webhooks['Webhooks'])
+```
+
+```bash cURL
+curl --request GET \
+  --url https://console.sendlayer.com/api/v1/webhooks \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+### Webhook Response Format
+When you retrieve webhooks, you'll receive data in this format:
+
+```json
+{
+  "Webhooks": [
+    {
+      "WebhookID": "23718",
+      "CreatedAt": "2025-04-11 09:43:07",
+      "UpdatedAt": "2025-04-11 09:43:07",
+      "Status": "Enabled",
+      "WebhookURL": "https://your-domain.com/webhook",
+      "Event": "open",
+      "LastResponseCode": "200",
+      "LastResponseBody": "",
+      "LastResponseAt": "2025-04-11 10:15:30",
+      "LastResponseTryCounter": "0"
+    }
+  ]
+}
+```
+
+## Deleting a Webhook
+You can delete a webhook by providing its ID. This action cannot be undone.
+
+<CodeGroup>
+```javascript JavaScript
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+
+const webhookId = 23718;
+await sendlayer.Webhooks.delete(webhookId);
+console.log('Webhook deleted successfully');
+```
+
+```python Python
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+
+webhook_id = 23718
+sendlayer.Webhooks.delete(webhook_id)
+print("Webhook deleted successfully")
+```
+
+```bash cURL
+curl --request DELETE \
+  --url https://console.sendlayer.com/api/v1/webhooks/23718 \
+  --header 'Authorization: Bearer <apiKey>'
+```
+</CodeGroup>
+
+<Warning>Deleting a webhook cannot be undone. You won't be able to recover or access your webhook after deleting it.</Warning>
+
+## Webhook Payload Format
+When SendLayer sends a webhook notification to your endpoint, it includes detailed information about the event. Here's an example of what you might receive:
+
+```json
+{
+  "Event": "open",
+  "LoggedAt": 1746340896,
+  "LogLevel": "info",
+  "Message": {
+    "Headers": {
+      "MessageId": "06e4491f-fc5a-49cb-bc57-xxxxxx",
+      "From": [["", "sender@example.com"]],
+      "ReplyTo": [],
+      "To": [["", "recipient@example.com"]],
+      "Cc": [],
+      "Bcc": []
+    },
+    "Size": 2004,
+    "Transport": "api"
+  },
+  "Recipient": "recipient@example.com",
+  "Reason": "Email opened.",
+  "Ip": "10.30.126.18",
+  "Geolocation": {
+    "City": "San Francisco",
+    "Region": "CA",
+    "Country": "US"
+  }
+}
+```
+
+## Best Practices
+1. **Use HTTPS**: Always use HTTPS URLs for your webhook endpoints to ensure data security
+2. **Validate Signatures**: Consider implementing signature validation to verify webhook authenticity
+3. **Monitor Status**: Regularly check your webhook status and response codes
+4. **Error Handling**: Implement proper error handling for webhook processing
+
+## FAQ
+<AccordionGroup>
+  <Accordion title="How many webhooks can I create?">
+    You can create multiple webhooks for different events and endpoints. There's no strict limit, but it's recommended to keep the number manageable for easier maintenance.
+  </Accordion>
+  <Accordion title="What happens if my webhook endpoint is down?">
+    SendLayer will retry sending webhook notifications if your endpoint is unavailable. Check the `LastResponseCode` and `LastResponseTryCounter` fields to monitor delivery status.
+  </Accordion>
+  <Accordion title="Can I update an existing webhook?">
+    Currently, webhooks cannot be updated. You'll need to delete the existing webhook and create a new one with the updated configuration.
+  </Accordion>
+  <Accordion title="How do I test my webhook endpoint?">
+    You can use tools like webhook.site or ngrok to create temporary public URLs for testing webhook functionality during development.
+  </Accordion>
+  <Accordion title="What should I do if webhooks stop working?">
+    Check your webhook endpoint's availability, verify the URL is correct, and ensure your server can handle POST requests. Review the `LastResponseCode` field for error details.
+  </Accordion>
+</AccordionGroup>

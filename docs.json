@@ -80,12 +80,24 @@
                   "guides/send-email-to-multiple-recipients",
                   "guides/send-email-with-attachments"
                 ]
+              },
+              {
+                "group": "Webhooks",
+                "pages": [
+                  "guides/manage-webhooks"
+                ]
+              },
+              {
+                "group": "Events",
+                "pages": [
+                  "guides/get-events"
+                ]
               }
             ]
 
           },
           {
-            "group": "Changelogs",
+            "group": "Releases",
             "pages": [
               "changelog"
             ]
