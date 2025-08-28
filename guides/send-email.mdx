@@ -10,6 +10,7 @@ SendLayer makes it easy to send transactional and marketing emails via a simple 
 ## Prerequisites
 - [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
 - [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+- [Install the SendLayer SDK](/quickstart/installation)
 
 ## Sending an Email
 After setting up your domain and API key, you can send emails using the SDK or directly via HTTP requests.
@@ -43,6 +44,24 @@ params = {
 }
 
 response = sendlayer.Emails.send(**params)
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'from' => 'sender@example.com',
+  'to' => 'recipient@example.com', // or array of recipients
+  'subject' => 'Test Email',
+  'text' => "This is a test email sent using SendLayer's PHP SDK",
+];
+
+$response = $sendlayer->Emails->send($params);
 ```
 
 ```bash cURL
@@ -82,7 +101,7 @@ const params = {
   from: 'sender@example.com',
   to: 'recipient@example.com', // or array of recipients
   subject: 'Test Email',
-  html: '<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>',
+  html: '<html><body><p>This is a test email sent with the <a href="https://sendlayer.com">SendLayer</a> API!</p></body></html>',
 };
 ```
 
@@ -93,6 +112,22 @@ params = {
     "subject": "Sending a Test Email",
     "html": "<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>" 
 }
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'from' => 'sender@example.com',
+  'to' => 'recipient@example.com',
+  'subject' => 'Test Email',
+  'html' => '<html><body><p>This is a test email sent with the <a href="https://sendlayer.com">SendLayer</a> API!</p></body></html>',
+];
 ```
 
 ```bash cURL

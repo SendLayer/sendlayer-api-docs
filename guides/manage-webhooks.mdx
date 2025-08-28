@@ -17,6 +17,7 @@ Webhooks are HTTP callbacks that allow SendLayer to notify your application in r
 - [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
 - [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
 - A publicly accessible webhook endpoint URL
+- [Install the SendLayer SDK](/quickstart/installation)
 
 ## Creating a Webhook
 To create a webhook, you need to specify the event type you want to monitor and the URL where SendLayer should send notifications.
@@ -48,6 +49,22 @@ params = {
 
 response = sendlayer.Webhooks.create(**params)
 print(f"Webhook created with ID: {response['NewWebhookID']}")
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'url' => 'https://your-domain.com/webhook',
+  'event' => 'open'
+];
+
+$response = $sendlayer->Webhooks->create($params);
 ```
 
 ```bash cURL
@@ -96,6 +113,17 @@ sendlayer = SendLayer('your-api-key')
 
 webhooks = sendlayer.Webhooks.get()
 print("Webhooks:", webhooks['Webhooks'])
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$webhooks = $sendlayer->Webhooks->get();
 ```
 
 ```bash cURL
@@ -149,6 +177,18 @@ sendlayer = SendLayer('your-api-key')
 webhook_id = 23718
 sendlayer.Webhooks.delete(webhook_id)
 print("Webhook deleted successfully")
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$webhookId = 23718;
+$sendlayer->Webhooks->delete($webhookId);
 ```
 
 ```bash cURL

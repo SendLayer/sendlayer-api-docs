@@ -1,7 +1,7 @@
 ---
 title: 'Retrieving Email Events'
 description: 'Learn how to retrieve and filter email events using the SendLayer API'
-icon: 'activity'
+icon: 'calendar'
 ---
 
 ## Overview
@@ -10,6 +10,7 @@ The SendLayer API allows you to retrieve detailed information about email events
 ## Prerequisites
 - [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
 - [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+- [Install the SendLayer SDK](/quickstart/installation)
 
 ## Retrieving All Events
 To get started, you can retrieve all events associated with your account. By default, this returns the most recent 5 events.
@@ -35,6 +36,18 @@ sendlayer = SendLayer('your-api-key')
 events = sendlayer.Events.get()
 print(f"Total records: {events['totalRecords']}")
 print(f"Events: {events['events']}")
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+// Get all events (defaults to 5 most recent)
+$events = $sendlayer->Events->get();
 ```
 
 ```bash cURL
@@ -114,6 +127,21 @@ events = sendlayer.Events.get(
 )
 ```
 
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+// Filter events for the last 24 hours
+$events = $sendlayer->Events->get([
+  'startDate' => time() - 24 * 60 * 60,
+  'endDate' => time()
+]);
+```
+
 ```bash cURL
 curl --request GET \
   --url 'https://console.sendlayer.com/api/v1/events?StartDate=1746254496&EndDate=1746340896' \
@@ -151,6 +179,23 @@ opened_events = sendlayer.Events.get(event='opened')
 
 # Get only bounced events
 bounced_events = sendlayer.Events.get(event='bounced')
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$openedEvents = $sendlayer->Events->get([
+  'event' => 'opened'
+]);
+
+$bouncedEvents = $sendlayer->Events->get([
+  'event' => 'bounced'
+]);
 ```
 
 ```bash cURL
@@ -192,6 +237,19 @@ message_events = sendlayer.Events.get(
 )
 ```
 
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$messageEvents = $sendlayer->Events->get([
+  'messageId' => '06e4491f-fc5a-49cb-bc57-xxxxxx'
+]);
+```
+
 ```bash cURL
 curl --request GET \
   --url 'https://console.sendlayer.com/api/v1/events?MessageID=06e4491f-fc5a-49cb-bc57-xxxxxx' \
@@ -225,6 +283,20 @@ events = sendlayer.Events.get(
     start_from=10,
     retrieve_count=20
 )
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$events = $sendlayer->Events->get([
+  'startFrom' => 10,
+  'retrieveCount' => 20
+]);
 ```
 
 ```bash cURL
@@ -271,6 +343,22 @@ events = sendlayer.Events.get(
     event='opened',
     retrieve_count=50
 )
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$events = $sendlayer->Events->get([
+  'startDate' => time() - 7 * 24 * 60 * 60,
+  'endDate' => time(),
+  'event' => 'opened',
+  'retrieveCount' => 50
+]);
 ```
 
 ```bash cURL

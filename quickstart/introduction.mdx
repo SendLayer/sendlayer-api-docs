@@ -1,6 +1,6 @@
 ---
-title: 'Introduction'
-description: 'Getting Started With SendLayer API'
+title: 'Getting Started'
+description: 'Learn how to quickly setup and use SendLayer SDKs'
 icon: 'rocket'
 ---
 
@@ -21,6 +21,9 @@ npm install sendlayer
 ```
 ```bash python
 pip install sendlayer
+```
+```bash PHP
+composer require sendlayer/sendlayer-php
 ```
 </CodeGroup>
 
@@ -60,6 +63,24 @@ response = sendlayer.Emails.send(
 )
 ```
 
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+// Initialize the email client with your API key
+$sendlayer = new SendLayer('your-api-key');
+
+// Send an email
+$response = $sendlayer->Emails->send([
+  'from' => 'sender@example.com',
+  'to' => 'recipient@example.com',
+  'subject' => 'Test Email',
+  'text' => 'This is a test email'
+]);
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
@@ -78,7 +99,7 @@ curl --request POST \
   ],
   "Subject": "This is the email subject",
   "ContentType": "HTML",
-  "HTMLContent": "<html><body><p>This is a test email sent with the <a href=\\\"https://sendlayer.com\\\">SendLayer</a> API!</p></body></html>"
+  "HTMLContent": "<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>"
 }'
 ```
 </CodeGroup>
@@ -98,6 +119,10 @@ SendLayer offers SDK libraries for popular programming languages that simplify t
 
   <Card title="Python" icon="python" href="/sdks/python">
     Learn how to use SendLayer's Python SDK.
+  </Card>
+
+  <Card title="PHP" icon="php" href="/sdks/php">
+    Learn how to use SendLayer's PHP SDK.
   </Card>
 </CardGroup>
 

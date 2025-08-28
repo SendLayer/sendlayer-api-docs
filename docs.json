@@ -14,7 +14,8 @@
           {
             "group": "Quick Start",
             "pages": [
-              "quickstart/introduction"
+              "quickstart/introduction",
+              "quickstart/installation"
             ]
 
           },
@@ -65,6 +66,12 @@
                 "group": "Python",
                 "pages": [
                   "sdks/python/introduction"
+                ]
+              },
+              {
+                "group": "PHP",
+                "pages": [
+                  "sdks/php/introduction"
                 ]
               }
             ]
