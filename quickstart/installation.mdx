@@ -1,0 +1,92 @@
+---
+title: 'Installation'
+description: 'Learn how to install the SendLayer SDKs'
+icon: 'download'
+---
+
+## Overview
+This guide shows you how to install the SendLayer SDKs for popular languages so you can start integrating quickly. We currently provide SDKs for Node.js, Python, and PHP.
+
+## Prerequisites
+Before installing any SDK, make sure you:
+- Authorized your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- Created or retrieved your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Node.js
+Install the SendLayer Node.js SDK using your preferred package manager.
+
+<CodeGroup>
+```bash npm
+npm install sendlayer
+```
+
+```bash yarn
+yarn add sendlayer
+```
+</CodeGroup>
+
+#### Validate Installation
+Create a file (for example, `checkInstall.js`) and run a quick import:
+
+```javascript checkInstall.js
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer('your-api-key');
+console.log('SendLayer initialized:', !!sendlayer);
+```
+
+<Note>Replace `'your-api-key'` with your actual API key. See our [Node.js SDK guide](/sdks/nodejs) for full usage examples.</Note>
+
+## Python
+Install the SendLayer Python SDK via `pip`:
+
+```bash
+pip install sendlayer
+```
+
+#### Validate Installation
+Create a file (for example, `check_install.py`) and run:
+
+```python check_install.py
+from sendlayer import SendLayer
+
+sendlayer = SendLayer('your-api-key')
+print('SendLayer initialized:', bool(sendlayer))
+```
+
+<Note>Replace `'your-api-key'` with your actual API key. See our [Python SDK guide](/sdks/python) for full usage examples.</Note>
+
+## PHP
+Install the SendLayer PHP SDK with Composer:
+
+```bash
+composer require sendlayer/sendlayer-php
+```
+
+#### Validate Installation
+Create a file (for example, `checkInstall.php`) and run:
+
+```php checkInstall.php
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+echo 'SendLayer initialized: ' . ($sendlayer ? 'true' : 'false');
+```
+
+<Note>Replace `'your-api-key'` with your actual API key. See our [PHP SDK guide](/sdks/php) for full usage examples.</Note>
+
+## Next Steps
+- Send your first email: [Send Email](/guides/send-email)
+- Add attachments: [Send Email with Attachments](/guides/send-email-with-attachments)
+- Send to multiple recipients: [Send Email to Multiple Recipients](/guides/send-email-to-multiple-recipients)
+- Manage webhooks: [Managing Webhooks](/guides/manage-webhooks)
+- Retrieve events: [Retrieving Email Events](/guides/get-events)
+
+## Troubleshooting
+- Ensure your environment can make outbound HTTPS requests
+- Verify your API key is correct and active
+- If installation fails, update your package manager (`npm`, `yarn`, `pip`, or `composer`) and try again
+- Check language version requirements (Node.js 16+, Python 3.8+, PHP 7.4+)
