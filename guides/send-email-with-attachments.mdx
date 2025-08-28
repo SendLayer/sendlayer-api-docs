@@ -10,6 +10,7 @@ SendLayer allows you to send emails with file attachments. This guide shows you 
 ## Prerequisites
 - [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
 - [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+- [Install the SendLayer SDK](/quickstart/installation)
 
 ## Sending Emails with Attachments
 You can attach files to your emails by including an `attachments` array in your email parameters. The SendLayer SDKs handle file encoding automatically, so you only need to provide the file path and type.
@@ -219,6 +220,8 @@ params = {
 
 ```php PHP
 <?php
+require_once 'vendor/autoload.php';
+
 use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');

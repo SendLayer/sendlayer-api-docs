@@ -10,6 +10,7 @@ SendLayer makes it easy to send transactional and marketing emails via a simple 
 ## Prerequisites
 - [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
 - [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
+- [Install the SendLayer SDK](/quickstart/installation)
 
 ## Sending an Email
 After setting up your domain and API key, you can send emails using the SDK or directly via HTTP requests.
@@ -115,6 +116,8 @@ params = {
 
 ```php PHP
 <?php
+require_once 'vendor/autoload.php';
+
 use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
