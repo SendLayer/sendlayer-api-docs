@@ -47,6 +47,24 @@ params = {
 response = sendlayer.Emails.send(**params)
 ```
 
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'from' => 'sender@example.com',
+  'to' => ['recipient1@example.com', 'recipient2@example.com', 'recipient3@example.com'],
+  'subject' => 'Newsletter Update',
+  'html' => '<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer\'s PHP SDK</p></body></html>',
+];
+
+$response = $sendlayer->Emails->send($params);
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
@@ -105,6 +123,24 @@ params = {
     "html": "<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>"
 }
 ```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'from' => 'sender@example.com',
+  'to' => ['recipient1@example.com', 'recipient2@example.com'],
+  'cc' => ['cc1@example.com', 'cc2@example.com'],
+  'bcc' => ['bcc1@example.com', 'bcc2@example.com'],
+  'subject' => 'Meeting Invitation',
+  'html' => '<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>',
+];
+```
 </CodeGroup>
 
 ## Including Names and Email Addresses
@@ -159,6 +195,26 @@ params = {
     "subject": "Team Update",
     "html": "<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>"
 }
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'from' => [ 'name' => 'John Smith', 'email' => 'john@example.com' ],
+  'to' => [
+    [ 'name' => 'Alice Johnson', 'email' => 'alice@example.com' ],
+    [ 'name' => 'Bob Wilson', 'email' => 'bob@example.com' ],
+    [ 'name' => 'Carol Davis', 'email' => 'carol@example.com' ]
+  ],
+  'subject' => 'Team Update',
+  'html' => '<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>',
+];
 ```
 </CodeGroup>
 

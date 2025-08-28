@@ -45,6 +45,24 @@ params = {
 response = sendlayer.Emails.send(**params)
 ```
 
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'from' => 'sender@example.com',
+  'to' => 'recipient@example.com', // or array of recipients
+  'subject' => 'Test Email',
+  'text' => "This is a test email sent using SendLayer's PHP SDK",
+];
+
+$response = $sendlayer->Emails->send($params);
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
@@ -82,7 +100,7 @@ const params = {
   from: 'sender@example.com',
   to: 'recipient@example.com', // or array of recipients
   subject: 'Test Email',
-  html: '<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>',
+  html: '<html><body><p>This is a test email sent with the <a href="https://sendlayer.com">SendLayer</a> API!</p></body></html>',
 };
 ```
 
@@ -93,6 +111,20 @@ params = {
     "subject": "Sending a Test Email",
     "html": "<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>" 
 }
+```
+
+```php PHP
+<?php
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'from' => 'sender@example.com',
+  'to' => 'recipient@example.com',
+  'subject' => 'Test Email',
+  'html' => '<html><body><p>This is a test email sent with the <a href="https://sendlayer.com">SendLayer</a> API!</p></body></html>',
+];
 ```
 
 ```bash cURL

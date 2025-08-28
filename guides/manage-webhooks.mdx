@@ -50,6 +50,22 @@ response = sendlayer.Webhooks.create(**params)
 print(f"Webhook created with ID: {response['NewWebhookID']}")
 ```
 
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$params = [
+  'url' => 'https://your-domain.com/webhook',
+  'event' => 'open'
+];
+
+$response = $sendlayer->Webhooks->create($params);
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/webhooks \
@@ -96,6 +112,17 @@ sendlayer = SendLayer('your-api-key')
 
 webhooks = sendlayer.Webhooks.get()
 print("Webhooks:", webhooks['Webhooks'])
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$webhooks = $sendlayer->Webhooks->get();
 ```
 
 ```bash cURL
@@ -149,6 +176,18 @@ sendlayer = SendLayer('your-api-key')
 webhook_id = 23718
 sendlayer.Webhooks.delete(webhook_id)
 print("Webhook deleted successfully")
+```
+
+```php PHP
+<?php
+require_once 'vendor/autoload.php';
+
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+$webhookId = 23718;
+$sendlayer->Webhooks->delete($webhookId);
 ```
 
 ```bash cURL
