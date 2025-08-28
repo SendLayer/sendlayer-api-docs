@@ -1,6 +1,6 @@
 ---
-title: 'PHP'
-description: 'SendLayer PHP SDK installation and usage'
+title: 'PHP SDK'
+description: 'Learn how to install and use the SendLayer PHP SDK.'
 icon: 'php'
 ---
 
@@ -9,6 +9,296 @@ Before getting started, you'll need to:
 1. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
 2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
 
-<Note>
-    The PHP SDK is coming soon. Please use the [REST API](/api-reference/) in the meantime.
-</Note>
+
+## Installation
+Install the SendLayer PHP SDK using Composer:
+
+```bash
+composer require sendlayer/sendlayer-php
+```
+
+## Usage
+After installation, you're ready to integrate the SDK into your code. The SDK includes modules for sending emails, managing webhooks, and retrieving events.
+
+### Sending an Email
+Create or edit a `.php` file. Then import and initialize the client with your API key.
+
+```php SendEmail.php
+<?php
+
+use SendLayer\SendLayer;
+
+// Initialize the email client with your API key
+$sendlayer = new SendLayer('your-api-key');
+
+// Send an email
+$response = $sendlayer->Emails->send([
+    'from' => 'sender@example.com',
+    'to' => 'recipient@example.com',
+    'subject' => 'Test Email',
+    'text' => 'This is a test email'
+]);
+
+```
+
+#### Sending HTML Emails
+To send HTML emails, include the `html` parameter when calling `send()`.
+
+```php SendEmail.php
+$response = $sendlayer->Emails->send([
+    'from' => 'sender@example.com',
+    'to' => 'recipient@example.com',
+    'subject' => 'Test Email',
+    'html' => "<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>"
+]);
+```
+<Note>You can include the `text` parameter to provide both plain text and HTML versions of your email.</Note>
+
+#### Sending to Multiple Recipients
+You can send emails to multiple recipients and include CC/BCC addresses.
+
+```php SendEmail.php
+$response = $sendlayer->Emails->send([
+    'from' => ['email' => 'sender@example.com', 'name' => 'Sender Name'],
+    'to' => [
+        ['email' => 'recipient1@example.com', 'name' => 'Recipient 1'],
+        ['email' => 'recipient2@example.com', 'name' => 'Recipient 2']
+    ],
+    'subject' => 'Complex Email',
+    'html' => '<p>This is a <strong>test email</strong>!</p>',
+    'text' => 'This is a test email!',
+    'cc' => [['email' => 'cc@example.com', 'name' => 'CC Recipient']],
+    'bcc' => [['email' => 'bcc@example.com', 'name' => 'BCC Recipient']],
+    'replyTo' => [['email' => 'reply@example.com', 'name' => 'Reply To']]
+]);
+```
+Each recipient field is an array of objects containing the recipient's `name` and `email`.
+
+<Note>There are limits to the number of recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide to learn more.</Note>
+
+#### Including Attachments
+You can add attachments by including the `attachments` parameter in the payload.
+
+```php SendEmail.php
+$response = $sendlayer->Emails->send([
+    'from' => ['email' => 'sender@example.com', 'name' => 'Sender Name'],
+    'to' => [ ['email' => 'recipient1@example.com', 'name' => 'Recipient'] ],
+    'subject' => 'Document attached',
+    'html' => '<p>See attached file.</p>',
+    'attachments' => [
+        [
+            'path' => '/path/to/document.pdf',
+            'type' => 'application/pdf'
+        ],
+        [
+            'path' => 'https://example.com/image.jpg',
+            'type' => 'image/jpeg'
+        ]
+    ]
+]);
+```
+<Warning>The maximum email size allowed is 10MB. This includes the message and all attachments.</Warning>
+
+#### Email Parameters
+Below are the supported parameters for sending emails with the PHP SDK.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `to` | `string` or `array` | Yes | Email address(es) of the recipient(s). Can be a single string or an array of objects with `email` and `name` |
+| `from` | `string` or `array` | Yes | Email address of the sender. Can be a single string or an object with `email` and `name` |
+| `subject` | `string` | Yes | Subject line of the email |
+| `text` | `string` | No | Plain text version of the email content |
+| `html` | `string` | No | HTML version of the email content |
+| `cc` | `array` | No | Array of objects for CC recipients |
+| `bcc` | `array` | No | Array of objects for BCC recipients |
+| `replyTo` | `array` | No | Array of objects for reply-to addresses |
+| `attachments` | `array` | No | Array of objects with file `path` and MIME `type` |
+| `tags` | `array` | No | Array of strings used to tag emails |
+| `headers` | `array` | No | Associative array of custom headers |
+
+### Managing Webhooks
+With the PHP SDK, you can create webhooks, retrieve them, and delete a specific webhook.
+
+#### Creating a New Webhook
+Initialize the client and call `Webhooks->create()` with required parameters `url` and `event`.
+
+```php Webhooks.php
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+// Create a webhook
+$webhook = $sendlayer->Webhooks->create([
+    'url' => 'https://your-domain.com/webhook',
+    'event' => 'open'
+]);
+```
+The `event` parameter accepts the following options:
+- bounce
+- click
+- open
+- unsubscribe
+- complaint
+- delivery
+
+Example success response for a new webhook:
+
+```json
+{ "NewWebhookID": 23718 }
+```
+
+#### Getting All Webhooks
+Use `Webhooks->get()` to view all webhooks you've created.
+
+```php Webhooks.php
+$webhooks = $sendlayer->Webhooks->get();
+```
+
+Example response:
+```json
+{
+  "Webhooks": [
+    {
+      "WebhookID": "23718",
+      "CreatedAt": "2025-04-11 09:43:07",
+      "UpdatedAt": "2025-04-11 09:43:07",
+      "Status": "Enabled",
+      "WebhookURL": "http://example.com/webhook",
+      "Event": "delivered",
+      "LastResponseCode": "0",
+      "LastResponseBody": "",
+      "LastResponseAt": "0000-00-00 00:00:00",
+      "LastResponseTryCounter": "0"
+    }
+  ]
+}
+```
+
+#### Deleting a Webhook
+Use `Webhooks->delete()` with the numeric `webhookId`.
+
+<Danger>Deleting a webhook cannot be undone.</Danger>
+
+```php Webhooks.php
+$webhookId = 23718;
+$sendlayer->Webhooks->delete($webhookId);
+```
+
+#### Webhooks Parameters
+The table below contains details about the supported parameters in the `Webhooks` module.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | `string` | Yes | The webhook endpoint URL where events will be sent |
+| `event` | `string` | Yes | The type of event to listen for. Options: bounce, click, open, unsubscribe, complaint, delivery |
+| `webhookId` | `integer` | Yes | Unique identifier for the webhook (used in delete operation) |
+
+### Retrieving Email Events
+You can view all events connected to your API key.
+
+#### Getting All Events
+Initialize the client and call `Events->get()` to retrieve events.
+
+<Note>The `Events->get()` method retrieves the top 5 events if no filters are specified.</Note>
+
+```php Events.php
+use SendLayer\SendLayer;
+
+$sendlayer = new SendLayer('your-api-key');
+
+// Get all events
+$events = $sendlayer->Events->get();
+```
+
+Example response:
+```json
+{
+  "totalRecords": 5,
+  "events": [
+    {
+      "Event": "delivered",
+      "LoggedAt": 1746340896,
+      "LogLevel": "info",
+      "Message": {
+        "Headers": {
+          "MessageId": "06e4491f-fc5a-49cb-bc57-xxxxxx",
+          "From": [["", "sender@example.com"]],
+          "ReplyTo": [],
+          "To": [["", "recipient@example.com"]],
+          "Cc": [],
+          "Bcc": []
+        },
+        "Size": 2004,
+        "Transport": "api"
+      },
+      "Recipient": "recipient@example.com",
+      "Reason": "Email has been delivered."
+    }
+  ]
+}
+```
+
+#### Filtering Events
+You can filter events by date range, event type, message ID, and pagination options.
+
+```php Events.php
+// Filter events for the last 4 hours
+$events = $sendlayer->Events->get([
+    'startDate' => new DateTime('-4 hours'),
+    'endDate' => new DateTime('now'),
+    'event' => 'opened'
+]);
+```
+
+#### Events Parameters
+The table below lists available parameters in the `Events` module.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `startDate` | `DateTime` or `int` | No | Start date for filtering events (Unix timestamp or DateTime) |
+| `endDate` | `DateTime` or `int` | No | End date for filtering events (Unix timestamp or DateTime) |
+| `event` | `string` | No | Filter by event type. Supported: `accepted`, `rejected`, `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `failed` |
+| `messageId` | `string` | No | Filter by the email `MessageId` |
+| `startFrom` | `integer` | No | Starting position for pagination |
+| `retrieveCount` | `integer` | No | Number of event records to retrieve (defaults to 5) |
+
+## Error Handling
+Use try/catch blocks to handle SDK errors. The SDK provides specific exception types for different failure scenarios.
+
+```php SendEmail.php
+use SendLayer\Exceptions\SendLayerAPIException;
+use SendLayer\Exceptions\SendLayerException;
+
+try {
+    $response = $sendlayer->Emails->send([ /* ... */ ]);
+} catch (SendLayerAPIException $e) {
+    // API-specific error with status code and response data
+    echo 'API error: ' . $e->getStatusCode() . ' - ' . $e->getMessage();
+} catch (SendLayerException $e) {
+    // Other SDK errors (validation, auth, network, etc.)
+    echo 'Error: ' . $e->getMessage();
+}
+```
+
+Here is an example error response:
+
+```bash
+Error: Invalid event name - 'opened' is not a valid event name
+```
+
+## Exception Types
+- `SendLayerException`: Base exception for all SendLayer errors
+- `SendLayerAuthenticationException`: Invalid API key or authentication issues
+- `SendLayerValidationException`: Invalid parameters or validation errors
+- `SendLayerAPIException`: API-specific errors with status code and response data
+
+## Requirements
+- PHP 7.4 or higher
+- Guzzle HTTP Client 7.0 or higher
+- JSON extension
+- cURL extension (recommended)
+
+## More Examples
+<Card title="SendLayer PHP SDK" icon="github" href="https://github.com/SendLayer/sendlayer-php" arrow="true" cta="View more examples">
+  View more details and examples on GitHub.
+</Card>
