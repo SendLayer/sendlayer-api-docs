@@ -25,6 +25,7 @@ Create or edit a `.php` file. Then import and initialize the client with your AP
 
 ```php SendEmail.php
 <?php
+require_once 'vendor/autoload.php';
 
 use SendLayer\SendLayer;
 
@@ -123,6 +124,9 @@ With the PHP SDK, you can create webhooks, retrieve them, and delete a specific 
 Initialize the client and call `Webhooks->create()` with required parameters `url` and `event`.
 
 ```php Webhooks.php
+<?php
+require_once 'vendor/autoload.php';
+
 use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
@@ -202,6 +206,9 @@ Initialize the client and call `Events->get()` to retrieve events.
 <Note>The `Events->get()` method retrieves the top 5 events if no filters are specified.</Note>
 
 ```php Events.php
+<?php
+require_once 'vendor/autoload.php';
+
 use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
@@ -266,6 +273,9 @@ The table below lists available parameters in the `Events` module.
 Use try/catch blocks to handle SDK errors. The SDK provides specific exception types for different failure scenarios.
 
 ```php SendEmail.php
+<?php
+require_once 'vendor/autoload.php';
+
 use SendLayer\Exceptions\SendLayerAPIException;
 use SendLayer\Exceptions\SendLayerException;
 
@@ -291,12 +301,6 @@ Error: Invalid event name - 'opened' is not a valid event name
 - `SendLayerAuthenticationException`: Invalid API key or authentication issues
 - `SendLayerValidationException`: Invalid parameters or validation errors
 - `SendLayerAPIException`: API-specific errors with status code and response data
-
-## Requirements
-- PHP 7.4 or higher
-- Guzzle HTTP Client 7.0 or higher
-- JSON extension
-- cURL extension (recommended)
 
 ## More Examples
 <Card title="SendLayer PHP SDK" icon="github" href="https://github.com/SendLayer/sendlayer-php" arrow="true" cta="View more examples">

@@ -66,6 +66,12 @@
                 "pages": [
                   "sdks/python/introduction"
                 ]
+              },
+              {
+                "group": "PHP",
+                "pages": [
+                  "sdks/php/introduction"
+                ]
               }
             ]
 
