@@ -133,7 +133,7 @@ curl --request GET \
 ```
 </CodeGroup>
 
-### Webhook Response Format
+### Get Webhook Response Format
 When you retrieve webhooks, you'll receive data in this format:
 
 ```json
@@ -201,43 +201,178 @@ curl --request DELETE \
 <Warning>Deleting a webhook cannot be undone. You won't be able to recover or access your webhook after deleting it.</Warning>
 
 ## Webhook Payload Format
-When SendLayer sends a webhook notification to your endpoint, it includes detailed information about the event. Here's an example of what you might receive:
+When SendLayer sends a webhook notification to your endpoint, it includes detailed information about the event. Below, we've provided examples of the payload for each event:
 
-```json
+
+<CodeGroup>
+```json Open
 {
-  "Event": "open",
-  "LoggedAt": 1746340896,
-  "LogLevel": "info",
-  "Message": {
-    "Headers": {
-      "MessageId": "06e4491f-fc5a-49cb-bc57-xxxxxx",
-      "From": [["", "sender@example.com"]],
-      "ReplyTo": [],
-      "To": [["", "recipient@example.com"]],
-      "Cc": [],
-      "Bcc": []
+  "event": {
+    "method": "POST",
+    "path": "/",
+    "query": {},
+    "client_ip": "0.0.0.0",
+    "url": "https://your-domain.com/webhook",
+    "headers": {
+      "host": "your-domain.com",
+      "content-length": 320,
+      "user-agent": "GuzzleHttp/6.5.1 curl/7.68.0 PHP/5.6.40-67+ubuntu20.04.1+deb.sury.org+1",
+      "content-type": "application/json"
     },
-    "Size": 2004,
-    "Transport": "api"
-  },
-  "Recipient": "recipient@example.com",
-  "Reason": "Email opened.",
-  "Ip": "10.30.126.18",
-  "Geolocation": {
-    "City": "San Francisco",
-    "Region": "CA",
-    "Country": "US"
+    "body": {
+      "Signature": {
+        "Timestamp": 1758100959,
+        "Token": "c0a6c82bdde01faab7e857",
+        "Signature": "3d1bf89405e4b71ed80bc240cd512aa7ed9db9dcfb17"
+      },
+      "EventData": {
+        "Event": "opened",
+        "Domain": "example.com",
+        "MessageID": "4331c06-2d1d-4387-969e-697835",
+        "To": "recipient@example.com",
+        "IPAddress": "10.30.126.18"
+      }
+    }
   }
 }
 ```
+```json Click
+{
+  "event": {
+    "method": "POST",
+    "path": "/",
+    "query": {},
+    "client_ip": "0.0.0.0",
+    "url": "https://your-domain.com/webhook",
+    "headers": {
+      "host": "your-domain.com",
+      "content-length": 320,
+      "user-agent": "GuzzleHttp/6.5.1 curl/7.68.0 PHP/5.6.40-67+ubuntu20.04.1+deb.sury.org+1",
+      "content-type": "application/json"
+    },
+    "body": {
+      "Signature": {
+        "Timestamp": 1758100959,
+        "Token": "c0a6c82bdde01faab7e857",
+        "Signature": "3d1bf89405e4b71ed80bc240cd512aa7ed9db9dcfb17"
+      },
+      "EventData": {
+        "Event": "clicked",
+        "Domain": "example.com",
+        "MessageID": "4331c06-2d1d-4387-969e-697835",
+        "To": "recipient@example.com",
+        "IPAddress": "10.30.126.18"
+      }
+    }
+  }
+}
+```
+```json Delivery
+{
+  "event": {
+    "method": "POST",
+    "path": "/",
+    "query": {},
+    "client_ip": "0.0.0.0",
+    "url": "https://your-domain.com/webhook",
+    "headers": {
+      "host": "your-domain.com",
+      "content-length": 320,
+      "user-agent": "GuzzleHttp/6.5.1 curl/7.68.0 PHP/5.6.40-67+ubuntu20.04.1+deb.sury.org+1",
+      "content-type": "application/json"
+    },
+    "body": {
+      "Signature": {
+        "Timestamp": 1758100959,
+        "Token": "c0a6c82bdde01faab7e857",
+        "Signature": "3d1bf89405e4b71ed80bc240cd512aa7ed9db9dcfb17"
+      },
+      "EventData": {
+        "Event": "delivered",
+        "Domain": "example.com",
+        "MessageID": "4331c06-2d1d-4387-969e-697835",
+        "To": "recipient@example.com",
+      }
+    }
+  }
+}
+```
+```json Bounce
+{
+  "event": {
+    "method": "POST",
+    "path": "/",
+    "query": {},
+    "client_ip": "0.0.0.0",
+    "url": "https://your-domain.com/webhook",
+    "headers": {
+      "host": "your-domain.com",
+      "content-length": 320,
+      "user-agent": "GuzzleHttp/6.5.1 curl/7.68.0 PHP/5.6.40-67+ubuntu20.04.1+deb.sury.org+1",
+      "content-type": "application/json"
+    },
+    "body": {
+      "Signature": {
+        "Timestamp": 1758100959,
+        "Token": "c0a6c82bdde01faab7e857",
+        "Signature": "3d1bf89405e4b71ed80bc240cd512aa7ed9db9dcfb17"
+      },
+      "EventData": {
+        "Event": "bounced",
+        "EventType": "failed",
+        "Domain": "example.com",
+        "MessageID": "4331c06-2d1d-4387-969e-697835",
+        "BouncedEmailAddress": {
+          "EmailAddress": "recipient@example.com",
+          "Status": "smtp;550 5.1.1 User Unknown",
+          "DiagnosticCode": "5.1.1 (bad destination mailbox address)"
+        },
+        "Reason": "smtp;550 5.1.1 User Unknown",
+        "Code": "5.1.1 (bad destination mailbox address)"
+      }
+    }
+  }
+}
+```
+```json Unsubscribe
+{
+  "event": {
+    "method": "POST",
+    "path": "/",
+    "query": {},
+    "client_ip": "0.0.0.0",
+    "url": "https://your-domain.com/webhook",
+    "headers": {
+      "host": "your-domain.com",
+      "content-length": 320,
+      "user-agent": "GuzzleHttp/6.5.1 curl/7.68.0 PHP/5.6.40-67+ubuntu20.04.1+deb.sury.org+1",
+      "content-type": "application/json"
+    },
+    "body": {
+      "Signature": {
+        "Timestamp": 1758100959,
+        "Token": "c0a6c82bdde01faab7e857",
+        "Signature": "3d1bf89405e4b71ed80bc240cd512aa7ed9db9dcfb17"
+      },
+      "EventData": {
+        "Event": "unsubscribed",
+        "Domain": "example.com",
+        "MessageID": "4331c06-2d1d-4387-969e-697835",
+        "To": "recipient@example.com",
+        "IPAddress": "10.30.126.18"
+      }
+    }
+  }
+}
+```
+</CodeGroup>
 
 ## Best Practices
-1. **Use HTTPS**: Always use HTTPS URLs for your webhook endpoints to ensure data security
-2. **Validate Signatures**: Consider implementing signature validation to verify webhook authenticity
-3. **Monitor Status**: Regularly check your webhook status and response codes
-4. **Error Handling**: Implement proper error handling for webhook processing
+1. **Use HTTPs**: Always use HTTPs URLs for your webhook endpoints to ensure data security
+2. **Monitor Status**: Regularly check your webhook status and response codes
+3. **Error Handling**: Implement proper error handling for webhook processing
 
-## FAQ
+## FAQs
 <AccordionGroup>
   <Accordion title="How many webhooks can I create?">
     You can create multiple webhooks for different events and endpoints. There's no strict limit, but it's recommended to keep the number manageable for easier maintenance.

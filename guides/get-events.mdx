@@ -150,7 +150,7 @@ curl --request GET \
 </CodeGroup>
 
 ### Filter by Event Type
-Retrieve only specific types of events.
+You can filter events by type. Here is an example:
 
 <CodeGroup>
 ```javascript JavaScript
@@ -210,6 +210,17 @@ curl --request GET \
   --header 'Authorization: Bearer <apiKey>'
 ```
 </CodeGroup>
+
+Below, we've highlighted the available event types:
+
+- `opened`: Recipient opened the email
+- `clicked`: Recipient clicked a link in the email
+- `unsubscribed`: Recipient unsubscribed from emails
+- `complained`: Recipient marked email as spam
+- `delivered`: Email successfully delivered to recipient's inbox
+- `failed`: Email failed to deliver and bounced back
+- `accepted`: Email was accepted by the recipient's email server. In some cases, this may be seen as `accepted-by-system`
+- `rejected`: Email was rejected by the recipient's email server
 
 ### Filter by Message ID
 Retrieve events for a specific email using its Message ID.
