@@ -19,3 +19,4 @@ jobs:
       with:
         use-quiet-mode: 'yes'
         folder-path: 'guides, quickstart, api-reference, sdks'
+        file-extension: '.mdx'

@@ -17,15 +17,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install MDX Extension Support
-        run: npm install -g mdx2vast
 
       - name: Run Vale Check
         uses: errata-ai/vale-action@v2.1.1
