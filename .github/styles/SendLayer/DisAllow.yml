@@ -1,0 +1,12 @@
+extends: existence
+message: Don't use '%s'
+ignorecase: true
+
+level: error
+
+tokens:
+  - abortion
+  - as well as
+  - and/or
+  - soft-ware 
+
