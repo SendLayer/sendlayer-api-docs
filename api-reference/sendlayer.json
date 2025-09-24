@@ -2,9 +2,29 @@
     "openapi": "3.0.3",
     "info": {
       "title": "SendLayer API",
-      "version": "1.0.0",
-      "description": "Welcome to the SendLayer API! To learn how to access your SendLayer API key, check out our tutorial on <a href=\"https://sendlayer.com/docs/managing-api-keys/\" title=\"Managing API Keys\">managing API keys</a>. <br/><br/> For a quick introduction to sending emails, see our guide to <a href=\"https://sendlayer.com/docs/getting-started-with-the-sendlayer-api/\" title=\"Getting Started With the SendLayer API\">getting started with the SendLayer API</a>.<br/><br/><strong>Need help?</strong> <a href=\"https://sendlayer.com/contact/\" title=\"SendLayer Support Page\">Contact the SendLayer support team</a>"
+      "version": "1.0.1",
+      "description": "Welcome to the SendLayer API! To learn how to access your SendLayer API key, check out our tutorial on <a href=\"https://sendlayer.com/docs/managing-api-keys/\" title=\"Managing API Keys\">managing API keys</a>. <br/><br/> For a quick introduction to sending emails, see our guide to <a href=\"https://sendlayer.com/docs/getting-started-with-the-sendlayer-api/\" title=\"Getting Started With the SendLayer API\">getting started with the SendLayer API</a>.<br/><br/><strong>Need help?</strong> <a href=\"https://sendlayer.com/contact/\" title=\"SendLayer Support Page\">Contact the SendLayer support team</a>",
+      "contact": {
+        "name": "SendLayer Support",
+        "url": "https://sendlayer.com/contact",
+        "email": "support@sendlayer.com"
+      }
     },
+
+    "tags": [
+      {
+        "name": "Email",
+        "description": "Operations related to email sending"
+      },
+      {
+        "name": "Events",
+        "description": "Operations related to retrieving email events"
+      },
+      {
+        "name": "Webhooks",
+        "description": "Operations related to creating and managing webhooks"
+      }
+    ],
     
     "paths": {
       "/email": {
@@ -196,7 +216,7 @@
     },
     "servers": [
       {
-        "url": "https://console.sendlayer.com/api/v1/"
+        "url": "https://console.sendlayer.com/api/v1"
       }
     ],
     "security": [
@@ -354,7 +374,7 @@
                 "type": "object",
                 "properties": {
                   "WebhookID": {
-                    "type": "string",
+                    "type": "number",
                     "example": 972
                   },
                   "CreatedAt": {
@@ -378,7 +398,7 @@
                     "example": "delivered"
                   },
                   "LastResponseCode": {
-                    "type": "string",
+                    "type": "number",
                     "example": 0
                   },
                   "LastResponseBody": {
@@ -390,7 +410,7 @@
                     "example": "1899-11-30T00:00:00.000Z"
                   },
                   "LastResponseTryCounter": {
-                    "type": "string",
+                    "type": "number",
                     "example": 0
                   }
                 }
@@ -541,7 +561,7 @@
                   },
                   "ContentId": {
                     "type": "integer",
-                    "example": "0"
+                    "example": 0
                   }
                 }
               }

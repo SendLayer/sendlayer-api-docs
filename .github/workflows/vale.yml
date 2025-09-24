@@ -1,0 +1,39 @@
+name: Vale-Linting
+
+# Event to trigger when the action is run
+on:
+  # Tiggers the workflow on push or pull request events but only for the main branch
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+jobs:
+  review:
+    name: Vale Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install MDX Extension Support
+        run: npm install -g mdx2vast
+
+      - name: Run Vale Check
+        uses: errata-ai/vale-action@v2.1.1
+        with:
+          fail_on_error: false
+          reporter: 'github-pr-review'
+
+
+
+
+  

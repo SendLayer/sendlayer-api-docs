@@ -1,0 +1,23 @@
+
+extends: substitution
+message: Use '%s' instead of '%s'
+level: warning
+ignorecase: false
+
+swap:
+  sendlayer: SendLayer
+  send layer: SendLayer
+  web-site: website
+  e-mail: email
+  wordpress: WordPress
+  word press: WordPress
+  Api: API
+  smtp: SMTP
+  email api: Email API
+  sendlayer api: SendLayer API
+  python: Python
+  javascript: JavaScript
+  ruby: Ruby
+  Php: PHP
+  php: PHP
+  
