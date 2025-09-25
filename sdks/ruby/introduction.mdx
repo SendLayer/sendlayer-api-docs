@@ -1,0 +1,344 @@
+---
+title: 'Ruby SDK'
+description: 'Learn how to install and use the SendLayer Ruby SDK.'
+icon: 'gem'
+---
+
+## Prerequisites
+Before getting started, you'll need to:
+1. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+Install the SendLayer Ruby SDK using RubyGems:
+
+```bash
+gem install sendlayer
+```
+
+## Usage
+After the installation completes, you're ready to start integrating the SDK into your code. The SDK includes modules to send emails, manage webhooks, and retrieve events.
+
+### Sending an Email in Ruby
+Create a new `.rb` file or edit an existing one. Then require the `sendlayer` gem and initialize the client with your API key. Once done, you
+
+```ruby send_email.rb
+require 'sendlayer'
+
+# Initialize the email client with your API key
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+```
+Once done, you'll be able to call the `emails.send()` method to send emails using Ruby. The method requires 4 parameters:
+- `from`: Sender email address
+- `to`: Recipient email address(es)
+- `subject`: The subject of your email
+- `text` or `html`: This is the email content. You can send plain text or HTML messages to users
+
+```ruby send_email.rb
+# other code snippets...
+
+# Add email payload
+params = {
+  from: 'paulie@example.com',
+  to: 'recipient@example.com',
+  subject: 'Test Email',
+  text: 'This is a test email'
+}
+
+response = sendlayer.emails.send(params)
+```
+
+#### Sending HTML Emails in Ruby
+To send HTML emails, include the `html` parameter in the `send` call.
+
+```ruby send_email.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+params = {
+  from: 'paulie@example.com',
+  to: 'recipient@example.com',
+  subject: 'Test Email',
+  html: "<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>"
+}
+
+response = sendlayer.emails.send(params)
+```
+<Note>You can include the `text` parameter to have both plain text and HTML versions of your email.</Note>
+
+#### Sending to Multiple Recipients
+You can send emails to multiple recipients and include `cc`, and `bcc` email addresses.
+
+```ruby send_email.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+params = {
+  from: { email: 'paulie@example.com', name: 'Paulie Paloma' },
+  to: [
+    { email: 'recipient1@example.com', name: 'Recipient 1' },
+    { email: 'recipient2@example.com', name: 'Recipient 2' }
+  ],
+  subject: 'Sending Emails to Multiple Recipients',
+  html: '<p>This is a <strong>test email</strong>!</p>',
+  text: 'This is a test email!',
+  cc: [{ email: 'cc@example.com', name: 'CC Recipient' }],
+  bcc: [{ email: 'bcc@example.com', name: 'BCC Recipient' }],
+  reply_to: [{ email: 'reply@example.com', name: 'Reply To' }]
+}
+
+response = sendlayer.emails.send(params)
+```
+Each recipient field accepts either a string email address or an array of hashes with `email` and `name` keys.
+
+<Note>There are limits to the number of recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide.</Note>
+
+#### Including Attachments
+When sending emails in Ruby with the SendLayer SDK, you can add attachments by including the `attachments` parameter in your email payload.
+
+```ruby send_email.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+params = {
+  from: { email: 'paulie@example.com', name: 'Paulie Paloma' },
+  to: [{ email: 'recipient1@example.com', name: 'Recipient' }],
+  subject: 'Complex Email',
+  html: '<p>This is a <strong>test email</strong>!</p>',
+  attachments: [
+    {
+      path: 'path/to/file.pdf',
+      type: 'application/pdf'
+    }
+  ]
+}
+
+response = sendlayer.emails.send(params)
+```
+<Warning>The maximum email size is 10MB (message plus attachments).</Warning>
+
+The SDK handles base64 encoding of each file you attach. You simply need to specify the `path` and `type` parameters. Make sure to specify the correct MIME `type`. 
+
+You can attach multiple files to your email payload, including local and remote files.
+
+#### Email Parameters
+Below are the supported parameters for sending emails with the Ruby SDK.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `to` | `String` or `Array<Hash>` | Yes | Recipient email(s). String or array of `{ email, name }` hashes |
+| `from` | `String` or `Hash` | Yes | Sender email. String or `{ email, name }` hash |
+| `subject` | `String` | Yes | Subject line of the email |
+| `text` | `String` | Yes | Plain text version of the email content |
+| `html` | `String` | No | HTML version of the email content |
+| `cc` | `String` or `Array<Hash>` | No | CC recipient(s). String or array of `{ email, name }` hashes |
+| `bcc` | `String` or `Array<Hash>` | No | BCC recipient(s). String or array of `{ email, name }` hashes |
+| `reply_to` | `String` or `Array<Hash>` | No | Reply-to address(es). String or array of `{ email, name }` hashes |
+| `attachments` | `Array<Hash>` | No | Attachment objects with `path` and `type` keys |
+| `tags` | `Array<String>` | No | Tags to associate with the email |
+| `headers` | `Hash` | No | Custom headers as key-value pairs |
+
+### Managing Webhooks
+With the SendLayer Ruby SDK, you can create webhooks, list existing webhooks, and delete a webhook.
+
+#### Creating a New Webhook
+After initializing the client, call the `webhooks.create` method and pass the required parameters. You'll need to pass the `url` and `event` parameters.
+
+```ruby webhooks.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+# Create a webhook
+params = {
+  url: 'https://your-domain.com/webhook',
+  event: 'open'
+}
+
+webhook = sendlayer.webhooks.create(params)
+```
+The `event` parameter supports the following values:
+- bounce
+- click
+- open
+- unsubscribe
+- complaint
+- delivery
+
+Example success response for a new webhook:
+
+```json
+{
+  "NewWebhookID": 23718
+}
+```
+<Note>See our guide to learn more about [managing webhooks](/guides/manage-webhooks) and understanding webhook payload format.</Note>
+
+#### Getting All Webhooks
+Use `webhooks.get` to retrieve all webhooks created on your SendLayer account.
+
+```ruby webhooks.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+webhooks = sendlayer.webhooks.get
+```
+
+Example response:
+```json
+{
+  "Webhooks": [
+    {
+      "WebhookID": "23718",
+      "CreatedAt": "2025-04-11 09:43:07",
+      "UpdatedAt": "2025-04-11 09:43:07",
+      "Status": "Enabled",
+      "WebhookURL": "http://example.com/webhook",
+      "Event": "delivered",
+      "LastResponseCode": "0",
+      "LastResponseBody": "",
+      "LastResponseAt": "0000-00-00 00:00:00",
+      "LastResponseTryCounter": "0"
+    }
+  ]
+}
+```
+
+#### Deleting a Webhook
+Use `webhooks.delete(webhook_id)` to delete a webhook by its numeric ID.
+
+<Danger>Deleting a webhook cannot be undone.</Danger>
+
+```ruby webhooks.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+webhook_id = 23718
+sendlayer.webhooks.delete(webhook_id)
+```
+
+#### Webhooks Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | `String` | Yes | Webhook endpoint URL where events will be sent |
+| `event` | `String` | Yes | Event to listen for. One of: bounce, click, open, unsubscribe, complaint, delivery |
+| `webhook_id` | `Integer` | Yes | Unique identifier for the webhook (used for deleting a webhook) |
+
+### Retrieving Email Events
+You can retrieve events associated with your API key.
+
+#### Getting All Events
+Call `events.get` with no parameters to retrieve recent events.
+
+<Note>If no filter is provided, the SDK returns the top 5 events.</Note>
+
+```ruby events.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+events = sendlayer.events.get
+```
+
+Example response:
+```json
+{
+  "totalRecords": 5,
+  "events": [
+    {
+      "Event": "delivered",
+      "LoggedAt": 1746340896,
+      "LogLevel": "info",
+      "Message": {
+        "Headers": {
+          "MessageId": "06e4491f-fc5a-49cb-bc57-xxxxxx",
+          "From": [["", "sender@example.com"]],
+          "ReplyTo": [],
+          "To": [["", "recipient@example.com"]],
+          "Cc": [],
+          "Bcc": []
+        },
+        "Size": 2004,
+        "Transport": "api"
+      },
+      "Recipient": "recipient@example.com",
+      "Reason": "Email has been delivered."
+    }
+  ]
+}
+```
+
+#### Filtering Events
+You can use optional parameters to filter results. Here's an example:
+
+```ruby events.rb
+require 'sendlayer'
+require 'time'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+params = {
+  start_date: Time.now - (4 * 60 * 60),
+  end_date: Time.now,
+  event: 'opened'
+}
+
+events = sendlayer.events.get(params)
+```
+
+#### Events Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `start_date` | `Time` | No | Start date for filtering events |
+| `end_date` | `Time` | No | End date for filtering events |
+| `event` | `String` | No | Filter by event type. Supported: `accepted`, `rejected`, `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `failed` |
+| `message_id` | `String` | No | Filter by email `MessageId` |
+| `start_from` | `Integer` | No | Starting number for pagination |
+| `retrieve_count` | `Integer` | No | Number of records to retrieve (defaults to 5) |
+
+## Error Handling
+The SDK provides custom exception types for better error handling.
+
+```ruby
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+begin
+  response = sendlayer.emails.send(
+    from: 'sender@example.com',
+    to: 'recipient@example.com',
+    subject: 'Test Email',
+    text: 'This is a test email'
+  )
+rescue SendLayer::SendLayerAPIError => e
+  puts "API error: #{e.status_code} - #{e.message}"
+rescue SendLayer::SendLayerError => e
+  puts "Error: #{e.message}"
+end
+```
+
+Example error output:
+
+```bash
+Error: Invalid event name - 'opened' is not a valid event name
+```
+
+### Exception Types
+- `SendLayer::SendLayerError`: Base exception for all SendLayer errors
+- `SendLayer::SendLayerAPIError`: API-specific errors with status code and response data
+- `SendLayer::SendLayerAuthenticationError`: Invalid API key or authentication issues
+- `SendLayer::SendLayerValidationError`: Invalid parameters or validation errors
+- `SendLayer::SendLayerNotFoundError`: Resource not found (404 errors)
+- `SendLayer::SendLayerRateLimitError`: Rate limit exceeded (429 errors)
+- `SendLayer::SendLayerInternalServerError`: Server errors (5xx errors)
+
+## More Examples
+<Card title="SendLayer Ruby SDK" icon="github" href="https://github.com/SendLayer/sendlayer-ruby" arrow="true" cta="View more examples">
+  View more details and examples on GitHub.
+  </Card>

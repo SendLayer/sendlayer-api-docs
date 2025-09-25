@@ -73,6 +73,12 @@
                 "pages": [
                   "sdks/php/introduction"
                 ]
+              },
+              {
+                "group": "Ruby",
+                "pages": [
+                  "sdks/ruby/introduction"
+                ]
               }
             ]
 
