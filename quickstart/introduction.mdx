@@ -22,8 +22,14 @@ npm install sendlayer
 ```bash python
 pip install sendlayer
 ```
-```bash PHP
+```bash php
 composer require sendlayer/sendlayer-php
+```
+```bash ruby
+gem install sendlayer
+```
+```bash go
+go get github.com/sendlayer/sendlayer-go
 ```
 </CodeGroup>
 
@@ -81,6 +87,33 @@ $response = $sendlayer->Emails->send([
 ]);
 ```
 
+```ruby Ruby
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+response = sendlayer.emails.send(
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Test Email',
+  text: 'This is a test email'
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+resp, err := sl.Emails.Send(
+  "sender@example.com",
+  "recipient@example.com",
+  "Test Email",
+  "This is a test email",
+  "",
+  nil, nil, nil,
+  nil, nil, nil,
+)
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
@@ -123,6 +156,12 @@ SendLayer offers SDK libraries for popular programming languages that simplify t
 
   <Card title="PHP" icon="php" href="/sdks/php">
     Learn how to use SendLayer's PHP SDK.
+  </Card>
+  <Card title="Ruby" icon="gem" href="/sdks/ruby/send-with-ruby">
+    Learn how to use SendLayer's Ruby SDK.
+  </Card>
+  <Card title="Go" icon="golang" href="/sdks/go/send-with-go">
+    Learn how to use SendLayer's Go SDK.
   </Card>
 </CardGroup>
 

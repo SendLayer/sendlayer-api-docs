@@ -81,6 +81,39 @@ $params = [
 $response = $sendlayer->Emails->send($params);
 ```
 
+```ruby Ruby
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+params = {
+  from: { email: 'sender@example.com', name: 'Sender Name' },
+  to: 'recipient@example.com',
+  subject: 'Document Attachment',
+  html: '<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>',
+  attachments: [
+    { path: './path/to/document.pdf', type: 'application/pdf' }
+  ]
+}
+
+response = sendlayer.emails.send(params)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+resp, err := sl.Emails.Send(
+  sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
+  "recipient@example.com",
+  "Document Attachment",
+  "",
+  "<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>",
+  nil, nil, nil,
+  []sendlayer.Attachment{{Path: "./path/to/document.pdf", Type: "application/pdf"}},
+  nil, nil,
+)
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
@@ -174,6 +207,26 @@ $params = [
   ]
 ];
 ```
+
+```ruby Ruby
+params = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Multiple Attachments',
+  html: '<html><body><h1>Multiple Files Attached</h1><p>Please find the attached documents.</p></body></html>',
+  attachments: [
+    { path: './path/to/document.pdf', type: 'application/pdf' },
+    { path: './path/to/image.jpg', type: 'image/jpeg' }
+  ]
+}
+```
+
+```go Go
+params := []sendlayer.Attachment{
+  {Path: "./path/to/document.pdf", Type: "application/pdf"},
+  {Path: "./path/to/image.jpg", Type: "image/jpeg"},
+}
+```
 </CodeGroup>
 
 ## Local and Remote File Attachments
@@ -236,6 +289,26 @@ $params = [
     [ 'path' => 'https://example.com/remote-image.jpg', 'type' => 'image/jpeg' ]
   ]
 ];
+```
+
+```ruby Ruby
+params = {
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Mixed Attachments',
+  html: '<html><body><h1>Files from different sources</h1><p>Attaching both local and remote files.</p></body></html>',
+  attachments: [
+    { path: './local-document.pdf', type: 'application/pdf' },
+    { path: 'https://example.com/remote-image.jpg', type: 'image/jpeg' }
+  ]
+}
+```
+
+```go Go
+params := []sendlayer.Attachment{
+  {Path: "./local-document.pdf", Type: "application/pdf"},
+  {Path: "https://example.com/remote-image.jpg", Type: "image/jpeg"},
+}
 ```
 </CodeGroup>
 

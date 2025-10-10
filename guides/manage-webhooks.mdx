@@ -67,6 +67,23 @@ $params = [
 $response = $sendlayer->Webhooks->create($params);
 ```
 
+```ruby Ruby
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+webhook = sendlayer.webhooks.create(
+  url: 'https://your-domain.com/webhook',
+  event: 'open'
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+webhook, err := sl.Webhooks.Create("https://your-domain.com/webhook", "open")
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/webhooks \
@@ -124,6 +141,16 @@ use SendLayer\SendLayer;
 $sendlayer = new SendLayer('your-api-key');
 
 $webhooks = $sendlayer->Webhooks->get();
+```
+
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+webhooks = sendlayer.webhooks.get
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+webhooks, err := sl.Webhooks.Get()
 ```
 
 ```bash cURL
@@ -189,6 +216,18 @@ $sendlayer = new SendLayer('your-api-key');
 
 $webhookId = 23718;
 $sendlayer->Webhooks->delete($webhookId);
+```
+
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+webhook_id = 23718
+sendlayer.webhooks.delete(webhook_id)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+var webhookID int64 = 23718
+_ = sl.Webhooks.Delete(webhookID)
 ```
 
 ```bash cURL
