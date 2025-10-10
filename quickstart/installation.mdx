@@ -5,7 +5,7 @@ icon: 'download'
 ---
 
 ## Overview
-This guide shows you how to install the SendLayer SDKs for popular languages so you can start integrating quickly. We currently provide SDKs for Node.js, Python, and PHP.
+This guide shows you how to install the SendLayer SDKs for popular languages so you can start integrating quickly. We currently provide SDKs for Node.js, Python, PHP, Ruby, and Go.
 
 ## Prerequisites
 Before using the SendLayer API, make sure you've:
@@ -77,6 +77,51 @@ echo 'SendLayer initialized: ' . ($sendlayer ? 'true' : 'false');
 ```
 
 <Note>Replace `'your-api-key'` with your actual API key. See our [PHP SDK guide](/sdks/php) for full usage examples.</Note>
+
+## Ruby
+Install the SendLayer Ruby SDK via RubyGems:
+
+```bash
+gem install sendlayer
+```
+
+#### Validate Installation
+Create a file (for example, `check_install.rb`) and run:
+
+```ruby check_install.rb
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+puts "SendLayer initialized: #{!sendlayer.nil?}"
+```
+
+<Note>Replace `'your-api-key'` with your actual API key. See our [Ruby SDK guide](/sdks/ruby/send-with-ruby) for full usage examples.</Note>
+
+## Go
+Install the SendLayer Go SDK using `go get`:
+
+```bash
+go get github.com/sendlayer/sendlayer-go
+```
+
+#### Validate Installation
+Create a file (for example, `check_install.go`) and run:
+
+```go check_install.go
+package main
+
+import (
+	"fmt"
+	"github.com/sendlayer/sendlayer-go"
+)
+
+func main() {
+	sl := sendlayer.New("your-api-key")
+	fmt.Println("SendLayer initialized:", sl != nil)
+}
+```
+
+<Note>Replace `'your-api-key'` with your actual API key. See our [Go SDK guide](/sdks/go/send-with-go) for full usage examples.</Note>
 
 ## Next Steps
 - Send your first email: [Send Email](/guides/send-email)

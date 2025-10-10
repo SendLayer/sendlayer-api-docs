@@ -50,6 +50,20 @@ $sendlayer = new SendLayer('your-api-key');
 $events = $sendlayer->Events->get();
 ```
 
+```ruby Ruby
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+events = sendlayer.events.get
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+all, err := sl.Events.Get(nil, nil, "", "", nil, nil)
+```
+
 ```bash cURL
 curl --request GET \
   --url https://console.sendlayer.com/api/v1/events \
@@ -142,6 +156,27 @@ $events = $sendlayer->Events->get([
 ]);
 ```
 
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+start_date = (Time.now - 24*60*60).to_i
+end_date = Time.now.to_i
+
+events = sendlayer.events.get(
+  start_date: start_date,
+  end_date: end_date
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+end := time.Now()
+start := end.Add(-24 * time.Hour)
+
+events, err := sl.Events.Get(&start, &end, "", "", nil, nil)
+```
+
 ```bash cURL
 curl --request GET \
   --url 'https://console.sendlayer.com/api/v1/events?StartDate=1746254496&EndDate=1746340896' \
@@ -196,6 +231,20 @@ $openedEvents = $sendlayer->Events->get([
 $bouncedEvents = $sendlayer->Events->get([
   'event' => 'bounced'
 ]);
+```
+
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+opened_events = sendlayer.events.get(event: 'opened')
+bounced_events = sendlayer.events.get(event: 'bounced')
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+opened, err := sl.Events.Get(nil, nil, "opened", "", nil, nil)
+bounced, err := sl.Events.Get(nil, nil, "bounced", "", nil, nil)
 ```
 
 ```bash cURL
@@ -261,6 +310,19 @@ $messageEvents = $sendlayer->Events->get([
 ]);
 ```
 
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+message_events = sendlayer.events.get(message_id: '06e4491f-fc5a-49cb-bc57-xxxxxx')
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+msgID := "06e4491f-fc5a-49cb-bc57-xxxxxx"
+events, err := sl.Events.Get(nil, nil, "", msgID, nil, nil)
+```
+
 ```bash cURL
 curl --request GET \
   --url 'https://console.sendlayer.com/api/v1/events?MessageID=06e4491f-fc5a-49cb-bc57-xxxxxx' \
@@ -308,6 +370,23 @@ $events = $sendlayer->Events->get([
   'startFrom' => 10,
   'retrieveCount' => 20
 ]);
+```
+
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+events = sendlayer.events.get(
+  start_from: 10,
+  retrieve_count: 20
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+startFrom := 10
+retrieveCount := 20
+events, err := sl.Events.Get(nil, nil, "", "", &startFrom, &retrieveCount)
 ```
 
 ```bash cURL
@@ -370,6 +449,27 @@ $events = $sendlayer->Events->get([
   'event' => 'opened',
   'retrieveCount' => 50
 ]);
+```
+
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+events = sendlayer.events.get(
+  start_date: (Time.now - 7*24*60*60).to_i,
+  end_date: Time.now.to_i,
+  event: 'opened',
+  retrieve_count: 50
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+end := time.Now()
+start := end.Add(-7 * 24 * time.Hour)
+retrieveCount := 50
+
+events, err := sl.Events.Get(&start, &end, "opened", "", nil, &retrieveCount)
 ```
 
 ```bash cURL

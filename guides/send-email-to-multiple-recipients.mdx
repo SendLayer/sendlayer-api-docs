@@ -66,6 +66,41 @@ $params = [
 $response = $sendlayer->Emails->send($params);
 ```
 
+```ruby Ruby
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+response = sendlayer.emails.send(
+  from: { email: 'sender@example.com', name: 'Sender Name' },
+  to: [
+    { email: 'recipient1@example.com', name: 'Recipient 1' },
+    { email: 'recipient2@example.com', name: 'Recipient 2' },
+    { email: 'recipient3@example.com', name: 'Recipient 3' }
+  ],
+  subject: 'Newsletter Update',
+  html: '<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer Ruby SDK</p></body></html>'
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+resp, err := sl.Emails.Send(
+  sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
+  []sendlayer.EmailAddress{
+    {Email: "recipient1@example.com", Name: "Recipient 1"},
+    {Email: "recipient2@example.com", Name: "Recipient 2"},
+    {Email: "recipient3@example.com", Name: "Recipient 3"},
+  },
+  "Newsletter Update",
+  "",
+  "<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer Go SDK</p></body></html>",
+  nil, nil, nil,
+  nil, nil, nil,
+)
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
@@ -142,6 +177,39 @@ $params = [
   'html' => '<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>',
 ];
 ```
+
+```ruby Ruby
+params = {
+  from: 'sender@example.com',
+  to: ['recipient1@example.com', 'recipient2@example.com'],
+  cc: ['cc1@example.com', 'cc2@example.com'],
+  bcc: ['bcc1@example.com', 'bcc2@example.com'],
+  subject: 'Meeting Invitation',
+  html: '<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>'
+}
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+response = sendlayer.emails.send(params)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+resp, err := sl.Emails.Send(
+  "sender@example.com",
+  []sendlayer.EmailAddress{
+    {Email: "recipient1@example.com"},
+    {Email: "recipient2@example.com"},
+  },
+  "Meeting Invitation",
+  "",
+  "<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>",
+  []sendlayer.EmailAddress{{Email: "cc1@example.com"}, {Email: "cc2@example.com"}},
+  []sendlayer.EmailAddress{{Email: "bcc1@example.com"}, {Email: "bcc2@example.com"}},
+  nil,
+  nil, nil, nil,
+)
+```
 </CodeGroup>
 
 ## Including Names and Email Addresses
@@ -216,6 +284,40 @@ $params = [
   'subject' => 'Team Update',
   'html' => '<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>',
 ];
+```
+
+```ruby Ruby
+params = {
+  from: { name: 'John Smith', email: 'john@example.com' },
+  to: [
+    { name: 'Alice Johnson', email: 'alice@example.com' },
+    { name: 'Bob Wilson', email: 'bob@example.com' },
+    { name: 'Carol Davis', email: 'carol@example.com' }
+  ],
+  subject: 'Team Update',
+  html: '<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>'
+}
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+response = sendlayer.emails.send(params)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+resp, err := sl.Emails.Send(
+  sendlayer.EmailAddress{Email: "john@example.com", Name: "John Smith"},
+  []sendlayer.EmailAddress{
+    {Email: "alice@example.com", Name: "Alice Johnson"},
+    {Email: "bob@example.com", Name: "Bob Wilson"},
+    {Email: "carol@example.com", Name: "Carol Davis"},
+  },
+  "Team Update",
+  "",
+  "<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>",
+  nil, nil, nil,
+  nil, nil, nil,
+)
 ```
 </CodeGroup>
 

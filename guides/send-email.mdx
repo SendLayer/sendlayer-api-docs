@@ -64,6 +64,33 @@ $params = [
 $response = $sendlayer->Emails->send($params);
 ```
 
+```ruby Ruby
+require 'sendlayer'
+
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+response = sendlayer.emails.send(
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Sending a Test Email',
+  text: "This is a test email sent using SendLayer's Ruby SDK"
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+resp, err := sl.Emails.Send(
+  "sender@example.com",
+  "recipient@example.com",
+  "Sending a Test Email",
+  "This is a test email sent using SendLayer's Go SDK",
+  "",
+  nil, nil, nil,
+  nil, nil, nil,
+)
+```
+
 ```bash cURL
 curl --request POST \
   --url https://console.sendlayer.com/api/v1/email \
@@ -128,6 +155,31 @@ $params = [
   'subject' => 'Test Email',
   'html' => '<html><body><p>This is a test email sent with the <a href="https://sendlayer.com">SendLayer</a> API!</p></body></html>',
 ];
+```
+
+```ruby Ruby
+sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+response = sendlayer.emails.send(
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Test Email',
+  html: '<html><body><p>This is a test email sent with the <a href="https://sendlayer.com">SendLayer</a> API!</p></body></html>'
+)
+```
+
+```go Go
+sl := sendlayer.New("your-api-key")
+
+resp, err := sl.Emails.Send(
+  "sender@example.com",
+  "recipient@example.com",
+  "Test Email",
+  "", // plain text (optional)
+  "<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>",
+  nil, nil, nil,
+  nil, nil, nil,
+)
 ```
 
 ```bash cURL

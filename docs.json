@@ -73,6 +73,18 @@
                 "pages": [
                   "sdks/php/introduction"
                 ]
+              },
+              {
+                "group": "Ruby",
+                "pages": [
+                  "sdks/ruby/send-with-ruby"
+                ]
+              },
+              {
+                "group": "Go",
+                "pages": [
+                  "sdks/go/send-with-go"
+                ]
               }
             ]
 
