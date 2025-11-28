@@ -85,6 +85,7 @@ $response = $sendlayer->Emails->send([
   'subject' => 'Test Email',
   'text' => 'This is a test email'
 ]);
+?>
 ```
 
 ```ruby Ruby
@@ -101,17 +102,33 @@ response = sendlayer.emails.send(
 ```
 
 ```go Go
-sl := sendlayer.New("your-api-key")
+package main
 
-resp, err := sl.Emails.Send(
-  "sender@example.com",
-  "recipient@example.com",
-  "Test Email",
-  "This is a test email",
-  "",
-  nil, nil, nil,
-  nil, nil, nil,
+import (
+	"fmt"
+	"github.com/sendlayer/sendlayer-go"
 )
+
+func main() {
+	// Initialize the email client with your API key
+	sl := sendlayer.New("your-api-key")
+
+	// Send an email
+	resp, err := sl.Emails.Send(
+		"sender@example.com",
+		"recipient@example.com",
+		"Test Email",
+		"This is a test email",
+		"",
+		nil, nil, nil,
+		nil, nil, nil,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Email sent! Message ID:", resp.MessageID)
+}
 ```
 
 ```bash cURL
