@@ -116,12 +116,19 @@
 
           },
           {
+            "group": "Integrations",
+            "pages": [
+              "integrations/ai-tools/mcp-server"
+            ]
+          },
+          {
             "group": "Releases",
             "pages": [
               "changelog"
             ]
           }
         ],
+        
     "global": {
       "anchors": [
         {
