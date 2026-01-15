@@ -61,8 +61,7 @@ After saving the file, restart Cursor and verify the MCP server is connected. Yo
 Run the following command on your terminal to configure the MCP server:
 
 ```bash
-claude mcp add --transport http secure-api https://mcp.sendlayer.com \
-  --header "Authorization: Bearer YOUR_SENDLAYER_API_KEY"
+claude mcp add --scope user --transport http sendlayer-mcp https://mcp.sendlayer.com --header "Authorization: Bearer YOUR_SENDLAYER_API_KEY"
 ```
 
 Be sure to replace `YOUR_SENDLAYER_API_KEY` with your actual SendLayer API key.
