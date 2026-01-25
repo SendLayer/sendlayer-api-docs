@@ -109,6 +109,33 @@ gemini mcp list
 
 You should see the `sendlayer` server in the list. You can now use the `sendlayer` server to send emails and manage webhooks/events.
 
+### Windsurf
+
+Open your Windsurf settings page. Then select the **Cascade** sidebar menu and click **Open MCP Marketplace**.
+
+![Windsurf MCP Marketplace](/images/mcp-server/windsurf-mcp-marketplace.png)
+
+Then, click the settings icon to open the `mcp_config.json` file.
+
+![Windsurf MCP Settings](/images/mcp-server/windsurf-mcp-settings.png)
+
+Once the file is open, add the following lines to the file and save it:
+
+```json
+{
+  "mcpServers": {
+    "sendlayer": {
+      "serverUrl": "https://mcp.sendlayer.com",
+      "headers": {
+        "x-sendlayer-api-key": "YOUR_SENDLAYER_API_KEY"
+      }
+    }
+  }
+}
+```
+
+Be sure to replace `YOUR_SENDLAYER_API_KEY` with your actual SendLayer API key.
+
 ## Features
 
 - Send plain text and HTML emails
