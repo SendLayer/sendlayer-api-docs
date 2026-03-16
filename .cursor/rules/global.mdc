@@ -1,8 +1,12 @@
 ---
-description: 
-globs: 
+description: Apply this rule when writing or editing Mintlify documentation and API docs content to enforce technical writing quality, component usage, and page structure standards.
+globs:
+  - "**/*.mdx"
+  - "**/*.md"
+  - "docs.json"
 alwaysApply: false
 ---
+
 # Mintlify technical writing rule
 
 You are an AI writing assistant specialized in creating exceptional technical documentation using Mintlify components and following industry-leading technical writing practices.

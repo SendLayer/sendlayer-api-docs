@@ -61,7 +61,7 @@ events = sendlayer.events.get
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-all, err := sl.Events.Get(nil, nil, "", "", nil, nil)
+all, err := sl.Events.Get(nil)
 ```
 
 ```bash cURL
@@ -174,7 +174,10 @@ sl := sendlayer.New("your-api-key")
 end := time.Now()
 start := end.Add(-24 * time.Hour)
 
-events, err := sl.Events.Get(&start, &end, "", "", nil, nil)
+events, err := sl.Events.Get(&sendlayer.GetEventsRequest{
+  StartDate: &start,
+  EndDate:   &end,
+})
 ```
 
 ```bash cURL
@@ -243,8 +246,12 @@ bounced_events = sendlayer.events.get(event: 'bounced')
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-opened, err := sl.Events.Get(nil, nil, "opened", "", nil, nil)
-bounced, err := sl.Events.Get(nil, nil, "bounced", "", nil, nil)
+opened, err := sl.Events.Get(&sendlayer.GetEventsRequest{
+  Event: "opened",
+})
+bounced, err := sl.Events.Get(&sendlayer.GetEventsRequest{
+  Event: "bounced",
+})
 ```
 
 ```bash cURL
@@ -320,7 +327,9 @@ message_events = sendlayer.events.get(message_id: '06e4491f-fc5a-49cb-bc57-xxxxx
 sl := sendlayer.New("your-api-key")
 
 msgID := "06e4491f-fc5a-49cb-bc57-xxxxxx"
-events, err := sl.Events.Get(nil, nil, "", msgID, nil, nil)
+events, err := sl.Events.Get(&sendlayer.GetEventsRequest{
+  MessageID: msgID,
+})
 ```
 
 ```bash cURL
@@ -386,7 +395,10 @@ sl := sendlayer.New("your-api-key")
 
 startFrom := 10
 retrieveCount := 20
-events, err := sl.Events.Get(nil, nil, "", "", &startFrom, &retrieveCount)
+events, err := sl.Events.Get(&sendlayer.GetEventsRequest{
+  StartFrom:    &startFrom,
+  RetrieveCount: &retrieveCount,
+})
 ```
 
 ```bash cURL
@@ -469,7 +481,12 @@ end := time.Now()
 start := end.Add(-7 * 24 * time.Hour)
 retrieveCount := 50
 
-events, err := sl.Events.Get(&start, &end, "opened", "", nil, &retrieveCount)
+events, err := sl.Events.Get(&sendlayer.GetEventsRequest{
+  StartDate:    &start,
+  EndDate:      &end,
+  Event:        "opened",
+  RetrieveCount: &retrieveCount,
+})
 ```
 
 ```bash cURL

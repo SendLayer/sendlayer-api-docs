@@ -1,5 +1,5 @@
 ---
-title: 'Getting Started'
+title: 'Quickstart'
 description: 'Learn how to quickly setup and use SendLayer SDKs'
 icon: 'rocket'
 ---
@@ -7,7 +7,6 @@ icon: 'rocket'
 ## Overview
 SendLayer API provides a playground for developers to interact with various endpoints and send API requests. With the API, you can send emails, create and manage webhooks. Additionally, you can retrieve and monitor events related to your SendLayer account.
 
-## Getting Started
 Before you can use the SendLayer API, you'll need to [authorize your domain]('https://sendlayer.com/docs/authorizing-your-domain/). Domain verification is an important steps and it helps proves domain ownership and improves email deliverability.
 
 After authorizing your domain, you'll need to create/retrieve your [API key]('https://sendlayer.com/docs/managing-api-keys/'). An API key is used to authenticate API requests.
@@ -106,6 +105,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"github.com/sendlayer/sendlayer-go"
 )
 
@@ -114,15 +114,12 @@ func main() {
 	sl := sendlayer.New("your-api-key")
 
 	// Send an email
-	resp, err := sl.Emails.Send(
-		"sender@example.com",
-		"recipient@example.com",
-		"Test Email",
-		"This is a test email",
-		"",
-		nil, nil, nil,
-		nil, nil, nil,
-	)
+	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+		From:    "sender@example.com",
+		To:      "recipient@example.com",
+		Subject: "Test Email",
+		Text:    "This is a test email",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

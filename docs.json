@@ -12,7 +12,7 @@
     "groups": "Developer Guides",
         "pages": [
           {
-            "group": "Quick Start",
+            "group": "Getting Started",
             "pages": [
               "quickstart/introduction",
               "quickstart/installation"

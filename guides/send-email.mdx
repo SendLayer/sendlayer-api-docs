@@ -80,15 +80,12 @@ response = sendlayer.emails.send(
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-resp, err := sl.Emails.Send(
-  "sender@example.com",
-  "recipient@example.com",
-  "Sending a Test Email",
-  "This is a test email sent using SendLayer's Go SDK",
-  "",
-  nil, nil, nil,
-  nil, nil, nil,
-)
+resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+  From:    "sender@example.com",
+  To:      "recipient@example.com",
+  Subject: "Sending a Test Email",
+  Text:    "This is a test email sent using SendLayer's Go SDK",
+})
 ```
 
 ```bash cURL
@@ -171,15 +168,12 @@ response = sendlayer.emails.send(
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-resp, err := sl.Emails.Send(
-  "sender@example.com",
-  "recipient@example.com",
-  "Test Email",
-  "", // plain text (optional)
-  "<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>",
-  nil, nil, nil,
-  nil, nil, nil,
-)
+resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+  From:    "sender@example.com",
+  To:      "recipient@example.com",
+  Subject: "Test Email",
+  Html:    "<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>",
+})
 ```
 
 ```bash cURL
