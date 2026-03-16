@@ -102,16 +102,15 @@ response = sendlayer.emails.send(params)
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-resp, err := sl.Emails.Send(
-  sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
-  "recipient@example.com",
-  "Document Attachment",
-  "",
-  "<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>",
-  nil, nil, nil,
-  []sendlayer.Attachment{{Path: "./path/to/document.pdf", Type: "application/pdf"}},
-  nil, nil,
-)
+resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+  From:    sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
+  To:      "recipient@example.com",
+  Subject: "Document Attachment",
+  Html:    "<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>",
+  Attachments: []sendlayer.Attachment{
+    {Path: "./path/to/document.pdf", Type: "application/pdf"},
+  },
+})
 ```
 
 ```bash cURL

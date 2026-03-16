@@ -81,7 +81,10 @@ webhook = sendlayer.webhooks.create(
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-webhook, err := sl.Webhooks.Create("https://your-domain.com/webhook", "open")
+webhook, err := sl.Webhooks.Create(&sendlayer.WebhookCreateRequest{
+  WebhookURL: "https://your-domain.com/webhook",
+  Event:      "open",
+})
 ```
 
 ```bash cURL
@@ -226,7 +229,7 @@ sendlayer.webhooks.delete(webhook_id)
 
 ```go Go
 sl := sendlayer.New("your-api-key")
-var webhookID int64 = 23718
+webhookID := 23718
 _ = sl.Webhooks.Delete(webhookID)
 ```
 

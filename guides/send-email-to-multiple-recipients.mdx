@@ -86,19 +86,16 @@ response = sendlayer.emails.send(
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-resp, err := sl.Emails.Send(
-  sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
-  []sendlayer.EmailAddress{
+resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+  From: sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
+  To: []sendlayer.EmailAddress{
     {Email: "recipient1@example.com", Name: "Recipient 1"},
     {Email: "recipient2@example.com", Name: "Recipient 2"},
     {Email: "recipient3@example.com", Name: "Recipient 3"},
   },
-  "Newsletter Update",
-  "",
-  "<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer Go SDK</p></body></html>",
-  nil, nil, nil,
-  nil, nil, nil,
-)
+  Subject: "Newsletter Update",
+  Html:    "<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer Go SDK</p></body></html>",
+})
 ```
 
 ```bash cURL
@@ -195,20 +192,17 @@ response = sendlayer.emails.send(params)
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-resp, err := sl.Emails.Send(
-  "sender@example.com",
-  []sendlayer.EmailAddress{
+resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+  From: "sender@example.com",
+  To: []sendlayer.EmailAddress{
     {Email: "recipient1@example.com"},
     {Email: "recipient2@example.com"},
   },
-  "Meeting Invitation",
-  "",
-  "<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>",
-  []sendlayer.EmailAddress{{Email: "cc1@example.com"}, {Email: "cc2@example.com"}},
-  []sendlayer.EmailAddress{{Email: "bcc1@example.com"}, {Email: "bcc2@example.com"}},
-  nil,
-  nil, nil, nil,
-)
+  Subject: "Meeting Invitation",
+  Html:    "<html><body><h1>Meeting Invitation</h1><p>You are invited to our team meeting next week.</p></body></html>",
+  Cc:      []sendlayer.EmailAddress{{Email: "cc1@example.com"}, {Email: "cc2@example.com"}},
+  Bcc:     []sendlayer.EmailAddress{{Email: "bcc1@example.com"}, {Email: "bcc2@example.com"}},
+})
 ```
 </CodeGroup>
 
@@ -305,19 +299,16 @@ response = sendlayer.emails.send(params)
 ```go Go
 sl := sendlayer.New("your-api-key")
 
-resp, err := sl.Emails.Send(
-  sendlayer.EmailAddress{Email: "john@example.com", Name: "John Smith"},
-  []sendlayer.EmailAddress{
+resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+  From: sendlayer.EmailAddress{Email: "john@example.com", Name: "John Smith"},
+  To: []sendlayer.EmailAddress{
     {Email: "alice@example.com", Name: "Alice Johnson"},
     {Email: "bob@example.com", Name: "Bob Wilson"},
     {Email: "carol@example.com", Name: "Carol Davis"},
   },
-  "Team Update",
-  "",
-  "<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>",
-  nil, nil, nil,
-  nil, nil, nil,
-)
+  Subject: "Team Update",
+  Html:    "<html><body><h1>Team Update</h1><p>Hello team, here is our weekly update.</p></body></html>",
+})
 ```
 </CodeGroup>
 
