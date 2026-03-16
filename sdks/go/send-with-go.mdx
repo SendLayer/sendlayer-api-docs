@@ -19,7 +19,8 @@ go get github.com/sendlayer/sendlayer-go
 ## Usage
 After installation, you can use the SDK modules for sending emails, managing webhooks, and retrieving email events.
 
-### Sending an Email
+### Send Email in Golang
+
 Initialize the client and call `sl.Emails.Send()` with a `SendEmailRequest`.
 
 ```go sendEmail.go
@@ -51,7 +52,7 @@ func main() {
 }
 ```
 
-#### Sending HTML Emails
+#### Send HTML Emails in Go
 To send HTML emails, set the `Html` field in the request payload.
 
 ```go sendEmail.go
@@ -84,7 +85,7 @@ func main() {
 ```
 <Note>You can include both `Text` and `Html` to send plain text and HTML versions of the same email.</Note>
 
-#### Sending to Multiple Recipients
+#### Send Email to Multiple Recipients
 Use `EmailAddress` objects to send to multiple recipients, including `Cc`, `Bcc`, and `ReplyTo`.
 
 ```go sendEmail.go
@@ -128,7 +129,7 @@ func main() {
 
 <Note>There are limits to the number of email recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide to learn more.</Note>
 
-#### Including Attachments
+#### Include Attachments in Email
 Include attachments by setting the `Attachments` field in `SendEmailRequest`.
 
 ```go sendEmail.go
@@ -170,7 +171,7 @@ Set `Path` to your local file path or hosted file URL, then set the file `Type` 
 
 SendLayer SDK supports both local and remote file attachments and allows you to add multiple attachment files. See our tutorial to learn more about [attaching files to emails](/guides/send-email-with-attachments).
 
-#### Email Parameters
+#### Email Request Parameters
 The table below contains the supported fields in `SendEmailRequest`.
 
 | Field | Type | Required | Description |
@@ -187,10 +188,10 @@ The table below contains the supported fields in `SendEmailRequest`.
 | `Headers` | `map[string]string` | No | Custom email headers |
 | `Tags` | `[]string` | No | Tags for categorizing emails |
 
-### Managing Webhooks
+### Manage Webhooks in Go
 With the SendLayer Go SDK, you can create, list, and delete webhooks.
 
-#### Creating a New Webhook
+#### Create a New Webhook
 Call `Webhooks.Create()` with a `WebhookCreateRequest`.
 
 ```go webhooks.go
@@ -234,7 +235,7 @@ Example success response for new webhook:
 }
 ```
 
-#### Getting All Webhooks
+#### Get All Webhooks
 To view all the webhooks you've created, use the `Webhooks.Get()` method.
 
 ```go webhooks.go
@@ -280,7 +281,7 @@ Here is an example response:
 }
 ```
 
-#### Deleting a Webhook
+#### Delete a Webhook
 To delete a specific webhook, pass the webhook ID to `Webhooks.Delete()`.
 
 <Warning>Deleting a webhook cannot be undone.</Warning>
@@ -309,7 +310,7 @@ func main() {
 }
 ```
 
-#### Webhooks Parameters
+#### Webhook Request Parameters
 The table below contains the supported inputs in the `Webhooks` module.
 
 | Parameter | Type | Required | Description |
@@ -318,10 +319,11 @@ The table below contains the supported inputs in the `Webhooks` module.
 | `Event` | `string` | Yes (create) | Event type for the webhook subscription |
 | `webhookId` | `int` | Yes (delete) | Unique webhook ID to delete |
 
-### Retrieving Email Events
-Use the `Events` module to retrieve delivery and engagement events.
+### Retrieve Email Events
 
-#### Getting All Events
+Use the `Events` module to retrieve email delivery and engagement events.
+
+#### Get All Events
 Initialize the client and call `Events.Get(nil)` to retrieve recent events.
 
 ```go events.go
@@ -376,7 +378,7 @@ Example response:
 }
 ```
 
-#### Filtering Events
+#### Filter Events
 Pass a `GetEventsRequest` to filter by date range and event type.
 
 ```go events.go
@@ -411,7 +413,7 @@ func main() {
 }
 ```
 
-#### Events Parameters
+#### Event Request Parameters
 
 The table below contains supported fields in `GetEventsRequest`.
 
@@ -473,7 +475,7 @@ Here is an example error response:
 Error: Invalid event name - 'opened' is not a valid event name
 ```
 
-## More Examples
+## More Go SDK Examples
 <Card title="SendLayer Go SDK" icon="github" href="https://github.com/sendlayer/sendlayer-go" arrow="true" cta="View more examples">
   View more details and examples on GitHub.
 </Card>
