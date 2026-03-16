@@ -4,6 +4,81 @@ description: "SendLayer API updates"
 rss: true
 ---
 
+<Update label="March 16, 2026" description="v1.0.0">
+  ### Golang SDK
+
+  Major v1 release with a revamped, struct-based request API across Email, Events, and Webhooks.
+
+  #### Summary
+
+  - Revamped email sending to use `SendEmailRequest` instead of positional arguments.
+  - Aligned events querying and webhook creation with `GetEventsRequest` and `WebhookCreateRequest`.
+
+  #### Details
+
+  **Email**
+  - Added `SendEmailRequest` with `From`, `To`, `Subject`, `Text`, `Html`, `Cc`, `Bcc`, `ReplyTo`, `Attachments`, `Headers`, and `Tags`.
+  - Updated `EmailsService.Send` signature to `Send(req *SendEmailRequest) (*EmailResponse, error)`.
+
+  **Events**
+  - Added `GetEventsRequest` with `StartDate`, `EndDate`, `Event`, `MessageID`, `StartFrom`, and `RetrieveCount`.
+  - Updated `EventsService.Get` signature to `Get(req *GetEventsRequest) (*EventsResponse, error)`.
+  - All fields are optional; `nil` means no filters (`GET /events`).
+
+  **Webhooks**
+  - Reused `WebhookCreateRequest` as the user-facing create payload.
+  - Updated `WebhooksService.Create` signature to `Create(req *WebhookCreateRequest) (*WebhookCreateResponse, error)`.
+
+  #### Breaking Changes
+
+  - `EmailsService.Send` no longer supports the old 12-argument signature.
+  - `EventsService.Get` and `WebhooksService.Create` now require struct-based request payloads.
+  - Existing integrations must migrate to request structs.
+
+  #### Migration Example
+
+  **Before**
+  ```go
+  func main() {
+  	sl := sendlayer.New(os.Getenv("SENDLAYER_API_KEY"))
+
+  	resp, err := sl.Emails.Send(
+  		"paulie@example.com",
+  		"recipient@example.com",
+  		"Test Email",
+  		"This is a test email",
+  		"",
+  		nil, nil, nil,
+  		nil, nil, nil,
+  	)
+  	if err != nil {
+  		log.Fatal(err)
+  	}
+
+  	fmt.Println("Email sent! Message ID:", resp.MessageID)
+  }
+  ```
+
+  **After**
+  ```go
+  func main() {
+  	sl := sendlayer.New(os.Getenv("SENDLAYER_API_KEY"))
+
+  	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+  		From:    "paulie@example.com",
+  		To:      "recipient@example.com",
+  		Subject: "Test Email",
+  		Text:    "This is a test email",
+  	})
+  	if err != nil {
+  		log.Fatal(err)
+  	}
+
+  	fmt.Println("Email sent! Message ID:", resp.MessageID)
+  }
+  ```
+</Update>
+
 <Update label="January 15, 2026" description="v1.0.0">
   ### MCP Server
 
