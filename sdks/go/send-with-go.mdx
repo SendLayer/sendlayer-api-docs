@@ -17,10 +17,10 @@ go get github.com/sendlayer/sendlayer-go
 ```
 
 ## Usage
-After the installation completes, you're ready to start integrating the SDK into your code. The SDK includes modules to send emails, manage webhooks, and retrieve events.
+After installation, you can use the SDK modules for sending emails, managing webhooks, and retrieving email events.
 
 ### Sending an Email
-Create a new `.go` file or edit an existing one. Import the `sendlayer` package and initialize the client with your SendLayer API key.
+Initialize the client and call `sl.Emails.Send()` with a `SendEmailRequest`.
 
 ```go sendEmail.go
 package main
@@ -28,25 +28,21 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/sendlayer/sendlayer-go"
 )
 
 func main() {
-	// Initialize the email client with your API key
+	// Initialize the client with your API key
 	sl := sendlayer.New("your-api-key")
 
 	// Send an email
-	resp, err := sl.Emails.Send(
-		"sender@example.com",
-		"recipient@example.com",
-		"Test Email",
-		"This is a test email",
-		"",
-		nil, nil, nil,
-		nil, nil, nil,
-	)
+	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+		From:    "sender@example.com",
+		To:      "recipient@example.com",
+		Subject: "Test Email",
+		Text:    "This is a test email",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +52,7 @@ func main() {
 ```
 
 #### Sending HTML Emails
-To send HTML emails, include the HTML content as the fifth parameter in the `Send()` method.
+To send HTML emails, set the `Html` field in the request payload.
 
 ```go sendEmail.go
 package main
@@ -72,15 +68,13 @@ func main() {
 	sl := sendlayer.New("your-api-key")
 
 	// Send an HTML email
-	resp, err := sl.Emails.Send(
-		"sender@example.com",
-		"recipient@example.com",
-		"Test Email",
-		"Plain text fallback",
-		"<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>",
-		nil, nil, nil,
-		nil, nil, nil,
-	)
+	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+		From:    "sender@example.com",
+		To:      "recipient@example.com",
+		Subject: "Test Email",
+		Text:    "Plain text fallback",
+		Html:    "<html><body><p>This is a test email sent with the <a href=\"https://sendlayer.com\">SendLayer</a> API!</p></body></html>",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -88,10 +82,10 @@ func main() {
 	fmt.Println("Email sent! Message ID:", resp.MessageID)
 }
 ```
-<Note>You can include both `text` and `html` parameters to have both plain text and HTML versions of your email message</Note>
+<Note>You can include both `Text` and `Html` to send plain text and HTML versions of the same email.</Note>
 
 #### Sending to Multiple Recipients
-You can send emails to multiple recipients including `"CC"` and `"BCC"` email addresses using the `EmailAddress` struct.
+Use `EmailAddress` objects to send to multiple recipients, including `Cc`, `Bcc`, and `ReplyTo`.
 
 ```go sendEmail.go
 package main
@@ -107,20 +101,22 @@ func main() {
 	sl := sendlayer.New("your-api-key")
 
 	// Send to multiple recipients
-	resp, err := sl.Emails.Send(
-		sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
-		[]sendlayer.EmailAddress{
+	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+		From: sendlayer.EmailAddress{
+			Email: "sender@example.com",
+			Name:  "Sender Name",
+		},
+		To: []sendlayer.EmailAddress{
 			{Email: "recipient1@example.com", Name: "Recipient 1"},
 			{Email: "recipient2@example.com", Name: "Recipient 2"},
 		},
-		"Complex Email",
-		"This is a test email!",
-		"<p>This is a <strong>test email</strong>!</p>",
-		[]sendlayer.EmailAddress{{Email: "cc@example.com", Name: "CC Recipient"}},
-		[]sendlayer.EmailAddress{{Email: "bcc@example.com", Name: "BCC Recipient"}},
-		[]sendlayer.EmailAddress{{Email: "reply@example.com", Name: "Reply To"}},
-		nil, nil, nil,
-	)
+		Subject: "Complex Email",
+		Text:    "This is a test email!",
+		Html:    "<p>This is a <strong>test email</strong>!</p>",
+		Cc:      []sendlayer.EmailAddress{{Email: "cc@example.com", Name: "CC Recipient"}},
+		Bcc:     []sendlayer.EmailAddress{{Email: "bcc@example.com", Name: "BCC Recipient"}},
+		ReplyTo: sendlayer.EmailAddress{Email: "reply@example.com", Name: "Reply To"},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -128,12 +124,12 @@ func main() {
 	fmt.Println("Email sent! Message ID:", resp.MessageID)
 }
 ```
-Each recipient field accepts either a string email address or a slice of `EmailAddress` structs containing the recipient's `Name` and `Email`.
+`From` and `To` accept either a string email or `EmailAddress` values. `Cc`, `Bcc`, and `ReplyTo` support the same flexible format.
 
 <Note>There are limits to the number of email recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide to learn more.</Note>
 
 #### Including Attachments
-You can include attachments to your email message by adding the `Attachment` struct to the email payload.
+Include attachments by setting the `Attachments` field in `SendEmailRequest`.
 
 ```go sendEmail.go
 package main
@@ -149,18 +145,18 @@ func main() {
 	sl := sendlayer.New("your-api-key")
 
 	// Send email with attachments
-	resp, err := sl.Emails.Send(
-		sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
-		[]sendlayer.EmailAddress{
+	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+		From: sendlayer.EmailAddress{Email: "sender@example.com", Name: "Sender Name"},
+		To: []sendlayer.EmailAddress{
 			{Email: "recipient1@example.com", Name: "Recipient"},
 		},
-		"Complex Email",
-		"Plain text fallback",
-		"<p>This is a <strong>test email</strong>!</p>",
-		nil, nil, nil,
-		[]sendlayer.Attachment{{Path: "path/to/file.pdf", Type: "application/pdf"}},
-		nil, nil,
-	)
+		Subject: "Complex Email",
+		Text:    "Plain text fallback",
+		Html:    "<p>This is a <strong>test email</strong>!</p>",
+		Attachments: []sendlayer.Attachment{
+			{Path: "path/to/file.pdf", Type: "application/pdf"},
+		},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -170,34 +166,32 @@ func main() {
 ```
 <Warning>The maximum email size SendLayer allows is 10MB. This includes both the message as well as attachment files.</Warning>
 
-Simply replace the `Path` field with the path to the attachment file you wish to attach and specify the correct `Type`.
+Set `Path` to your local file path or hosted file URL, then set the file `Type` (MIME type).
 
 SendLayer SDK supports both local and remote file attachments and allows you to add multiple attachment files. See our tutorial to learn more about [attaching files to emails](/guides/send-email-with-attachments).
 
 #### Email Parameters
-Below is a table containing the supported parameters for sending emails in Go using SendLayer SDK.
+The table below contains the supported fields in `SendEmailRequest`.
 
-| Parameter | Type | Required | Description |
+| Field | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `from` | `string` or `EmailAddress` | Yes | Email address of the sender. Can be a single email string or an `EmailAddress` struct with `Email` and `Name` fields |
-| `to` | `string` or `[]EmailAddress` | Yes | Email address(es) of the recipient(s). Can be a single email string or a slice of `EmailAddress` structs |
-| `subject` | `string` | Yes | Subject line of the email |
-| `text` | `string` | Yes | Plain text version of the email content |
-| `html` | `string` | No | HTML version of the email content |
-| `cc` | `[]EmailAddress` | No | CC email addresses as a slice of `EmailAddress` structs |
-| `bcc` | `[]EmailAddress` | No | BCC email addresses as a slice of `EmailAddress` structs |
-| `replyTo` | `[]EmailAddress` | No | Reply-to email addresses as a slice of `EmailAddress` structs |
-| `attachments` | `[]Attachment` | No | Slice of `Attachment` structs containing file paths and MIME types |
-| `headers` | `map[string]string` | No | Map containing custom headers as key-value pairs |
-| `tags` | `[]string` | No | Slice of strings for tagging emails |
+| `From` | `string` or `EmailAddress` | Yes | Sender email, as a plain email string or `EmailAddress` (`Email` + optional `Name`) |
+| `To` | `string`, `EmailAddress`, or `[]EmailAddress` | Yes | Recipient email(s), as one address or multiple addresses |
+| `Subject` | `string` | Yes | Email subject line |
+| `Text` | `string` | Yes | Plain text body |
+| `Html` | `string` | No | HTML body |
+| `Cc` | `EmailAddress` or `[]EmailAddress` | No | Carbon-copy recipients |
+| `Bcc` | `EmailAddress` or `[]EmailAddress` | No | Blind carbon-copy recipients |
+| `ReplyTo` | `EmailAddress` or `[]EmailAddress` | No | Reply-to recipient(s) |
+| `Attachments` | `[]Attachment` | No | File attachments with `Path` and MIME `Type` |
+| `Headers` | `map[string]string` | No | Custom email headers |
+| `Tags` | `[]string` | No | Tags for categorizing emails |
 
 ### Managing Webhooks
-With the SendLayer Go SDK, you can create new webhooks, view all webhooks you've created, and also delete a specific webhook.
+With the SendLayer Go SDK, you can create, list, and delete webhooks.
 
 #### Creating a New Webhook
-To create a new webhook, you'll need to first import the SendLayer package and initialize it with your API key.
-
-Then call the `Webhooks.Create()` method and specify the required parameters. This method requires the `url` and `event` parameters.
+Call `Webhooks.Create()` with a `WebhookCreateRequest`.
 
 ```go webhooks.go
 package main
@@ -213,7 +207,10 @@ func main() {
 	sl := sendlayer.New("your-api-key")
 
 	// Create a webhook
-	webhook, err := sl.Webhooks.Create("https://your-domain.com/webhook", "open")
+	webhook, err := sl.Webhooks.Create(&sendlayer.WebhookCreateRequest{
+		WebhookURL: "https://your-domain.com/webhook",
+		Event:      "open",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -221,7 +218,7 @@ func main() {
 	fmt.Println("Webhook created! ID:", webhook.WebhookID)
 }
 ```
-The `event` parameter is constrained to the following options:
+The `Event` field accepts the following options:
 - bounce
 - click
 - open
@@ -284,14 +281,15 @@ Here is an example response:
 ```
 
 #### Deleting a Webhook
-To delete a specific webhook, use the `Webhooks.Delete()` method. This method accepts one required parameter `webhookId` that needs to be an integer.
+To delete a specific webhook, pass the webhook ID to `Webhooks.Delete()`.
 
-<Danger>Deleting a webhook cannot be undone. You won't be able to recover or access your webhook after deleting it.</Danger>
+<Warning>Deleting a webhook cannot be undone.</Warning>
 
 ```go webhooks.go
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/sendlayer/sendlayer-go"
@@ -312,21 +310,19 @@ func main() {
 ```
 
 #### Webhooks Parameters
-The table below contains details about the supported parameters in the `Webhooks` module.
+The table below contains the supported inputs in the `Webhooks` module.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `url` | `string` | Yes | The webhook endpoint URL where events will be sent |
-| `event` | `string` | Yes | The type of event to listen for. Options: bounce, click, open, unsubscribe, complaint, delivery |
-| `webhookId` | `int` | Yes | Unique identifier for the webhook (used in delete operation) |
+| `WebhookURL` | `string` | Yes (create) | Webhook endpoint URL where SendLayer sends events |
+| `Event` | `string` | Yes (create) | Event type for the webhook subscription |
+| `webhookId` | `int` | Yes (delete) | Unique webhook ID to delete |
 
 ### Retrieving Email Events
-You can view all events connected to your API key.
+Use the `Events` module to retrieve delivery and engagement events.
 
 #### Getting All Events
-To get started, import the SendLayer package and initialize it with your API key. Then call the `Events.Get()` method to retrieve all events.
-
-<Note>The `Events.Get()` method retrieves the top 5 events in your account if no filter parameter is specified.</Note>
+Initialize the client and call `Events.Get(nil)` to retrieve recent events.
 
 ```go events.go
 package main
@@ -342,7 +338,7 @@ func main() {
 	sl := sendlayer.New("your-api-key")
 
 	// Get all events
-	events, err := sl.Events.Get(nil, nil, "", "", nil, nil)
+	events, err := sl.Events.Get(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -350,7 +346,9 @@ func main() {
 	fmt.Println("Total events:", events.TotalRecords)
 }
 ```
+
 Example response:
+
 ```json
 {
   "totalRecords": 5,
@@ -379,7 +377,7 @@ Example response:
 ```
 
 #### Filtering Events
-The `Events.Get()` method in the `SendLayer` client accepts some optional parameters. These parameters can be used to filter the API response. Here is an example:
+Pass a `GetEventsRequest` to filter by date range and event type.
 
 ```go events.go
 package main
@@ -395,12 +393,16 @@ import (
 func main() {
 	sl := sendlayer.New("your-api-key")
 
-	// Filter events for the last 4 hours
-	end := time.Now()
-	start := end.Add(-4 * time.Hour)
+	// Filter events for the last 24 hours
+	endDate := time.Now()
+	startDate := endDate.Add(-24 * time.Hour)
 	event := "opened"
 
-	events, err := sl.Events.Get(&start, &end, event, "", nil, nil)
+	events, err := sl.Events.Get(&sendlayer.GetEventsRequest{
+		StartDate: &startDate,
+		EndDate:   &endDate,
+		Event:     event,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -410,20 +412,21 @@ func main() {
 ```
 
 #### Events Parameters
-The table below contains details about the available parameters in the `Events` module.
 
-| Parameter | Type | Required | Description |
+The table below contains supported fields in `GetEventsRequest`.
+
+| Field | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `startDate` | `*time.Time` | No | Start date for filtering events |
-| `endDate` | `*time.Time` | No | End date for filtering events |
-| `event` | `string` | No | Filter the API request by the type of event. Supported events include: `accepted`, `rejected`, `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `failed` |
-| `messageId` | `string` | No | Filter by the email `MessageId` |
-| `startFrom` | `*int` | No | Specify a starting number for the email filter |
-| `retrieveCount` | `*int` | No | This parameter controls the number of event records that'll be displayed. It defaults to 5 if none is specified |
+| `StartDate` | `*time.Time` | No | Start date for filtering events |
+| `EndDate` | `*time.Time` | No | End date for filtering events |
+| `Event` | `string` | No | Filter by event type (for example, `opened`) |
+| `MessageID` | `string` | No | Filter by SendLayer message ID |
+| `StartFrom` | `*int` | No | Starting offset for paginated event results |
+| `RetrieveCount` | `*int` | No | Number of records to return |
 
 ## Error Handling
 
-The SDK provides custom error types (`SendLayerError`, `SendLayerAPIError`, `SendLayerValidationError`) for better error handling. You can use type assertions to handle different error types:
+The SDK returns typed errors you can inspect with `errors.As`.
 
 ```go
 package main
@@ -439,27 +442,24 @@ import (
 func main() {
 	sl := sendlayer.New("your-api-key")
 
-	resp, err := sl.Emails.Send(
-		"sender@example.com",
-		"recipient@example.com",
-		"Test Email",
-		"This is a test email",
-		"",
-		nil, nil, nil,
-		nil, nil, nil,
-	)
+	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+		From:    "sender@example.com",
+		To:      "recipient@example.com",
+		Subject: "Test Email",
+		Text:    "This is a test email",
+	})
 	if err != nil {
 		var apiErr *sendlayer.SendLayerAPIError
 		var valErr *sendlayer.SendLayerValidationError
 		if errors.As(err, &apiErr) {
-			fmt.Printf("API error: %s (Status: %d)\n", apiErr.Message, apiErr.StatusCode)
+			fmt.Println("API error:", apiErr.Message, apiErr.StatusCode)
 			return
 		}
 		if errors.As(err, &valErr) {
-			fmt.Printf("Validation error: %s\n", valErr.Error())
+			fmt.Println("Validation error:", valErr.Error())
 			return
 		}
-		fmt.Printf("Unexpected error: %s\n", err)
+		fmt.Println("Unexpected error:", err)
 		return
 	}
 
