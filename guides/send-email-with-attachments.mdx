@@ -1,18 +1,22 @@
 ---
 title: 'Send Email with Attachments'
-description: 'How to send emails with attachments using the SendLayer API'
+description: 'Learn how to send emails with attachments using the SendLayer API'
 icon: 'paperclip'
+keywords: ['send email with attachments', 'sendlayer', 'email', 'attachments', 'sdk']
 ---
 
 ## Overview
+
 SendLayer allows you to send emails with file attachments. This guide shows you how to send emails with attachments using the SendLayer API, with examples for popular programming languages.
 
 ## Prerequisites
+
 - [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)
 - [Create or retrieve your API key](https://sendlayer.com/docs/managing-api-keys/)
 - [Install the SendLayer SDK](/quickstart/installation)
 
 ## Sending Emails with Attachments
+
 You can attach files to your emails by including an `attachments` array in your email parameters. The SendLayer SDKs handle file encoding automatically, so you only need to provide the file path and type.
 
 <Note>The maximum file size per email is **10 MB**, including both the email content and all attachments combined.</Note>

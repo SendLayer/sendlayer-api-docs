@@ -1,7 +1,8 @@
 ---
 title: 'Send Email to Multiple Recipients'
-description: 'How to send emails to multiple recipients using the SendLayer API'
+description: 'Learn how to send emails to multiple recipients using the SendLayer API'
 icon: 'users'
+keywords: ['send email to multiple recipients', 'sendlayer', 'email', 'multiple recipients', 'sdk']
 ---
 
 ## Overview
@@ -318,11 +319,11 @@ resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
 <AccordionGroup>
   <Accordion title="What is the maximum number of recipients I can send to?">
     SendLayer has specific limits for multiple recipients regardless of your account type:
-    - **Send To:** 10 email addresses
-    - **CC:** 10 email addresses  
-    - **BCC:** 5 email addresses
+    - **Send To**: 10 email addresses
+    - **CC**: 10 email addresses  
+    - **BCC**: 5 email addresses
     
-    For larger lists, consider using our bulk sending features or sending in batches. See our [Rate Limits](/api-reference/rate-limit) documentation for complete details on all API limits.
+    For more information, see our [Rate Limits](/api-reference/rate-limit) documentation.
   </Accordion>
   <Accordion title="Can I personalize emails for each recipient?">
     Yes, you can personalize emails by using merge tags or by sending individual emails in a loop.
