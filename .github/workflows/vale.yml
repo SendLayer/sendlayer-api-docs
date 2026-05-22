@@ -5,9 +5,19 @@ on:
   # Tiggers the workflow on push or pull request events but only for the main branch
   pull_request:
     branches: [ main ]
+    paths:
+      - "guides/**"
+      - "quickstart/**"
+      - "api-reference/**"
+      - "sdks/**"
+      - "**.mdx"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
 
 
 jobs:
@@ -29,8 +39,10 @@ jobs:
         with:
           reporter: github-pr-review
           filter_mode: added
-          files: "guides, quickstart, api-reference, sdks"
+          files: '["guides, quickstart, api-reference, sdks"]'
           fail_on_error: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
 
