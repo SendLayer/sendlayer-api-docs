@@ -1,0 +1,231 @@
+---
+title: 'Send email with Express.js'
+sidebarTitle: 'Express.js'
+description: 'Learn how to send emails from an Express.js server using the SendLayer Node.js SDK.'
+icon: 'server'
+keywords: ['expressjs', 'express.js', 'express', 'send email', 'sendlayer', 'node.js sdk', 'rest api', 'webhook endpoint']
+---
+
+## Prerequisites
+
+- Node.js 16 or later
+- An Express 4 or Express 5 project
+- Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- Create or retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+
+Install the SDK alongside Express and `dotenv`.
+
+<CodeGroup>
+```bash npm
+npm install express sendlayer dotenv
+```
+
+```bash yarn
+yarn add express sendlayer dotenv
+```
+
+```bash pnpm
+pnpm add express sendlayer dotenv
+```
+</CodeGroup>
+
+## Storing your API key
+
+Create a `.env` file in your project root and add the key.
+
+```bash .env
+SENDLAYER_API_KEY=your-api-key
+PORT=3000
+```
+
+Add `.env` to `.gitignore` so the key never reaches version control.
+
+## Creating the email client
+
+Initialize the client in its own module and export it. A single instance serves every route in the application.
+
+```javascript src/sendlayer.js
+import 'dotenv/config';
+import { SendLayer } from 'sendlayer';
+
+if (!process.env.SENDLAYER_API_KEY) {
+  throw new Error('SENDLAYER_API_KEY is not set');
+}
+
+export const sendlayer = new SendLayer(process.env.SENDLAYER_API_KEY);
+```
+
+The startup check fails fast on a missing key. Without it, the first request would be the place the problem surfaces.
+
+<Note>These examples use ES modules. Add `"type": "module"` to your `package.json`, or convert the imports to `require()` calls if your project uses CommonJS.</Note>
+
+## Sending an email from a route
+
+Add a POST route that reads JSON from the request body and calls `Emails.send()`.
+
+```javascript src/server.js
+import express from 'express';
+import { sendlayer } from './sendlayer.js';
+
+const app = express();
+app.use(express.json());
+
+app.post('/api/send-email', async (req, res) => {
+  const { name, email, message } = req.body;
+
+  const response = await sendlayer.Emails.send({
+    from: { email: 'sender@example.com', name: 'Acme Support' },
+    to: [{ email: 'support@example.com', name: 'Support Team' }],
+    replyTo: [{ email, name }],
+    subject: `New message from ${name}`,
+    text: message,
+  });
+
+  res.status(200).json({ messageId: response });
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
+```
+
+The `express.json()` middleware parses the request body. Without it, `req.body` is undefined.
+
+<Note>The sender email address must match a domain you have authorized in SendLayer.</Note>
+
+## Validating input before sending
+
+Reject malformed requests before they reach the API. This saves a round trip and returns a clearer error to the caller.
+
+```javascript src/routes/email.js
+import express from 'express';
+import { sendlayer } from '../sendlayer.js';
+
+const router = express.Router();
+
+router.post('/send-email', async (req, res, next) => {
+  const { email, subject, message } = req.body;
+
+  if (!email || !subject || !message) {
+    return res.status(400).json({
+      error: 'The email, subject, and message fields are required.',
+    });
+  }
+
+  try {
+    const response = await sendlayer.Emails.send({
+      from: 'sender@example.com',
+      to: email,
+      subject,
+      text: message,
+    });
+
+    res.json({ messageId: response });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;
+```
+
+Mount the router in your application file.
+
+```javascript src/server.js
+import express from 'express';
+import emailRoutes from './routes/email.js';
+
+const app = express();
+app.use(express.json());
+app.use('/api', emailRoutes);
+```
+
+## Sending HTML emails
+
+Add the `html` parameter for rich content. Include `text` as a fallback for clients that block HTML.
+
+```javascript src/routes/welcome.js
+import express from 'express';
+import { sendlayer } from '../sendlayer.js';
+
+const router = express.Router();
+
+router.post('/welcome', async (req, res, next) => {
+  try {
+    const response = await sendlayer.Emails.send({
+      from: { email: 'hello@example.com', name: 'Acme' },
+      to: req.body.email,
+      subject: 'Welcome to Acme',
+      html: `
+        <html>
+          <body>
+            <h1>Welcome aboard</h1>
+            <p>Your account is ready. <a href="https://example.com/login">Sign in</a> to get started.</p>
+          </body>
+        </html>
+      `,
+      text: 'Your account is ready. Sign in at https://example.com/login to get started.',
+      tags: ['welcome-email'],
+    });
+
+    res.json({ messageId: response });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;
+```
+
+The `tags` array labels the message. Tags show up in your event history, which helps you separate welcome emails from other traffic.
+
+## Testing the endpoint
+
+Start the developmentserver. 
+
+```bash
+node src/server.js
+```
+
+Then post a request from another terminal using cURL.
+
+```bash
+curl --request POST \
+  --url http://localhost:3000/api/send-email \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "name": "Paulie Paloma",
+  "email": "paulie@example.com",
+  "message": "Testing the send endpoint."
+}'
+```
+
+A successful request returns the message ID:
+
+```json
+{
+  "messageId": "06e4491f-fc5a-49cb-bc57-xxxxxx"
+}
+```
+
+Open the **Email logs** page in your SendLayer dashboard to confirm delivery.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Node.js SDK Reference" icon="node-js" href="/sdks/nodejs/introduction">
+    Review every method and parameter in the Node.js SDK.
+  </Card>
+  <Card title="Managing Webhooks" icon="webhook" href="/guides/manage-webhooks">
+    Create, list, and delete webhook subscriptions.
+  </Card>
+  <Card title="Retrieving Events" icon="list" href="/guides/get-events">
+    Query delivery events for any message.
+  </Card>
+  <Card title="Rate Limits" icon="clock" href="/api-reference/rate-limit">
+    Understand recipient and request limits.
+  </Card>
+</CardGroup>

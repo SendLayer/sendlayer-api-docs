@@ -1,0 +1,214 @@
+---
+title: 'Send email with Nuxt'
+sidebarTitle: 'Nuxt'
+description: 'Learn how to send emails from a Nuxt application using the SendLayer Node.js SDK.'
+icon: 'vuejs'
+keywords: ['nuxt', 'nuxt 3', 'nitro', 'server route', 'send email', 'sendlayer', 'vue', 'node.js sdk']
+---
+
+## Prerequisites
+
+- A Nuxt 3 or Nuxt 4 project
+- Node.js 18 or later
+- Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- Create or retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+
+Install the SDK in your project root.
+
+<CodeGroup>
+```bash npm
+npm install sendlayer
+```
+
+```bash yarn
+yarn add sendlayer
+```
+
+```bash pnpm
+pnpm add sendlayer
+```
+</CodeGroup>
+
+## Storing your API key
+Nuxt reads private values through `runtimeConfig`. Declare the key at the top level of the config object so it stays on the server.
+
+```javascript nuxt.config.ts
+export default defineNuxtConfig({
+  runtimeConfig: {
+    // Server-only. Set through NUXT_SENDLAYER_API_KEY at runtime.
+    sendlayerApiKey: '',
+
+    public: {
+      // Values here are exposed to the browser. Keep the API key out.
+      supportEmail: 'support@example.com',
+    },
+  },
+});
+```
+
+Add the matching environment variable to `.env`. Nuxt maps `NUXT_SENDLAYER_API_KEY` onto `runtimeConfig.sendlayerApiKey` automatically.
+
+```bash .env
+NUXT_SENDLAYER_API_KEY=your-api-key
+```
+
+<Warning>Keys placed under `runtimeConfig.public` ship to the browser. Only the top-level section stays private to the server.</Warning>
+
+## Sending an email from a server route
+
+Create a server route in `server/api/send-email.post.js`. The `.post` suffix restricts the handler to POST requests.
+
+```javascript server/api/send-email.post.js
+import { SendLayer } from 'sendlayer';
+
+export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event);
+  const sendlayer = new SendLayer(config.sendlayerApiKey);
+
+  const { name, email, message } = await readBody(event);
+
+  const response = await sendlayer.Emails.send({
+    from: { email: 'sender@example.com', name: 'Acme Support' },
+    to: [{ email: 'support@example.com', name: 'Support Team' }],
+    replyTo: [{ email, name }],
+    subject: `New message from ${name}`,
+    text: message,
+  });
+
+  return { messageId: response };
+});
+```
+
+`readBody()` parses the incoming JSON payload, and `useRuntimeConfig(event)` reads the private key at request time.
+
+<Note>Use a `from` address on a domain you authorized in SendLayer. Requests from an unauthorized domain fail.</Note>
+
+## Reusing the client across routes
+Create the client once in a server utility. Nitro auto-imports anything under `server/utils`, so the helper is available in every route without an import statement.
+
+```javascript server/utils/sendlayer.js
+import { SendLayer } from 'sendlayer';
+
+let client;
+
+export function useSendLayer(event) {
+  if (!client) {
+    const config = useRuntimeConfig(event);
+
+    if (!config.sendlayerApiKey) {
+      throw new Error('NUXT_SENDLAYER_API_KEY is not set');
+    }
+
+    client = new SendLayer(config.sendlayerApiKey);
+  }
+
+  return client;
+}
+```
+
+Call the helper from any server route:
+
+```javascript server/api/welcome.post.js
+export default defineEventHandler(async (event) => {
+  const sendlayer = useSendLayer(event);
+  const { email } = await readBody(event);
+
+  const response = await sendlayer.Emails.send({
+    from: { email: 'hello@example.com', name: 'Acme' },
+    to: email,
+    subject: 'Welcome to Acme',
+    html: '<p>Your account is ready. <a href="https://example.com/login">Sign in</a> to get started.</p>',
+    text: 'Your account is ready. Sign in at https://example.com/login to get started.',
+    tags: ['welcome-email'],
+  });
+
+  return { messageId: response };
+});
+```
+
+## Calling the route from a Vue page
+Use `$fetch` to post the form data. Nuxt sets the JSON content type when the body is an object.
+
+```vue pages/contact.vue
+<script setup>
+const form = reactive({ name: '', email: '', message: '' });
+const status = ref('idle');
+
+async function submit() {
+  status.value = 'sending';
+
+  try {
+    await $fetch('/api/send-email', {
+      method: 'POST',
+      body: form,
+    });
+    status.value = 'sent';
+  } catch (error) {
+    status.value = 'error';
+  }
+}
+</script>
+
+<template>
+  <form @submit.prevent="submit">
+    <input v-model="form.name" placeholder="Your name" required />
+    <input v-model="form.email" type="email" placeholder="Your email" required />
+    <textarea v-model="form.message" placeholder="Your message" required />
+    <button type="submit" :disabled="status === 'sending'">
+      {{ status === 'sending' ? 'Sending…' : 'Send message' }}
+    </button>
+    <p v-if="status === 'sent'">Message sent.</p>
+    <p v-if="status === 'error'">Something went wrong. Try again.</p>
+  </form>
+</template>
+```
+
+<Tip>Use `$fetch` for user-triggered actions such as form submissions. Reserve `useFetch` for data you load when the page renders.</Tip>
+
+## Testing the route
+Start the development development server.
+
+```bash
+npm run dev
+```
+
+Then post a request from another terminal using cURL.
+
+```bash
+curl --request POST \
+  --url http://localhost:3000/api/send-email \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "name": "Paulie Paloma",
+  "email": "paulie@example.com",
+  "message": "Testing the Nuxt server route."
+}'
+```
+
+A successful request returns the message ID:
+
+```json
+{
+  "messageId": "06e4491f-fc5a-49cb-bc57-xxxxxx"
+}
+```
+
+Open the **Email logs** page in your SendLayer dashboard to confirm delivery.
+
+## Next Steps
+<CardGroup cols={2}>
+  <Card title="Node.js SDK Reference" icon="node-js" href="/sdks/nodejs/introduction">
+    Review every method and parameter in the Node.js SDK.
+  </Card>
+  <Card title="Managing Webhooks" icon="webhook" href="/guides/manage-webhooks">
+    Track opens, clicks, and bounces with webhooks.
+  </Card>
+  <Card title="Retrieving Events" icon="list" href="/guides/get-events">
+    Query delivery events for any message.
+  </Card>
+  <Card title="Rate Limits" icon="clock" href="/api-reference/rate-limit">
+    Understand recipient and request limits.
+  </Card>
+</CardGroup>

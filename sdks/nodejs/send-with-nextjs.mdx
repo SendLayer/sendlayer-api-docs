@@ -1,0 +1,218 @@
+---
+title: 'Send Email With Next.js'
+sidebarTitle: 'Next.js'
+description: 'Learn how to send emails from a Next.js application using the SendLayer Node.js SDK.'
+icon: 'react'
+keywords: ['nextjs', 'next.js', 'send email', 'sendlayer', 'route handler', 'server action', 'app router', 'node.js sdk']
+---
+
+## Prerequisites
+
+- A Next.js project (version 13.4 or later for the App Router)
+- Node.js 16 or later
+- Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- Create or retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+
+Install the SendLayer Node.js SDK in your project root.
+
+<CodeGroup>
+```bash npm
+npm install sendlayer
+```
+
+```bash yarn
+yarn add sendlayer
+```
+
+```bash pnpm
+pnpm add sendlayer
+```
+</CodeGroup>
+
+## Storing your API key
+Add your API key to `.env.local` in the project root.
+
+```bash .env.local
+SENDLAYER_API_KEY=your-api-key
+```
+
+<Warning>Never prefix the key with `NEXT_PUBLIC_`. Any variable with that prefix ships to the browser, which exposes your credentials to every visitor.</Warning>
+
+Add `.env.local` to your `.gitignore` file so the key stays out of version control.
+
+## Sending an email from a route handler
+
+Create a Route Handler at `app/api/send-email/route.js`. Next.js runs this file on the server only, so the SDK and your API key remain private.
+
+```javascript app/api/send-email/route.js
+import { NextResponse } from 'next/server';
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer(process.env.SENDLAYER_API_KEY);
+
+export async function POST(request) {
+  const { name, email, message } = await request.json();
+
+  const response = await sendlayer.Emails.send({
+    from: { email: 'sender@example.com', name: 'Acme Support' },
+    to: [{ email: 'support@example.com', name: 'Support Team' }],
+    replyTo: [{ email, name }],
+    subject: `New contact form message from ${name}`,
+    text: message,
+  });
+
+  return NextResponse.json({ messageId: response }, { status: 200 });
+}
+```
+
+The `replyTo` field points at the person who filled in the form. Support agents can then reply directly from their inbox.
+
+<Note>Use a `from` address on a domain you authorized in SendLayer. Sending from an unauthorized domain causes the request to fail.</Note>
+
+## Submitting the form from a client component
+
+Create a client component that posts JSON to the route handler.
+
+```javascript app/contact/ContactForm.jsx
+'use client';
+
+import { useState } from 'react';
+
+export default function ContactForm() {
+  const [status, setStatus] = useState('idle');
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setStatus('sending');
+
+    const formData = new FormData(event.currentTarget);
+
+    const response = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        message: formData.get('message'),
+      }),
+    });
+
+    setStatus(response.ok ? 'sent' : 'error');
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="name" placeholder="Your name" required />
+      <input name="email" type="email" placeholder="Your email" required />
+      <textarea name="message" placeholder="Your message" required />
+      <button type="submit" disabled={status === 'sending'}>
+        {status === 'sending' ? 'Sending…' : 'Send message'}
+      </button>
+      {status === 'sent' && <p>Message sent.</p>}
+      {status === 'error' && <p>Something went wrong. Try again.</p>}
+    </form>
+  );
+}
+```
+
+Render the component from a page in `app/contact/page.jsx`.
+
+```javascript app/contact/page.jsx
+import ContactForm from './ContactForm';
+
+export default function ContactPage() {
+  return <ContactForm />;
+}
+```
+
+## Sending an email from a server action
+
+A server action removes the need for a separate endpoint. Mark the file with `'use server'` and call the SDK inside the action.
+
+```javascript app/actions/sendEmail.js
+'use server';
+
+import { SendLayer } from 'sendlayer';
+
+const sendlayer = new SendLayer(process.env.SENDLAYER_API_KEY);
+
+export async function sendEmail(formData) {
+  const email = formData.get('email');
+
+  await sendlayer.Emails.send({
+    from: { email: 'sender@example.com', name: 'Acme' },
+    to: email,
+    subject: 'Welcome to Acme',
+    html: '<p>Thanks for signing up. Your account is ready.</p>',
+    text: 'Thanks for signing up. Your account is ready.',
+  });
+
+  return { ok: true };
+}
+```
+
+Pass the action directly to a form. Next.js posts the form data to the server and runs the action there.
+
+```javascript app/signup/page.jsx
+import { sendEmail } from '../actions/sendEmail';
+
+export default function SignupPage() {
+  return (
+    <form action={sendEmail}>
+      <input name="email" type="email" placeholder="Your email" required />
+      <button type="submit">Sign up</button>
+    </form>
+  );
+}
+```
+
+
+## Testing the endpoint
+
+Start the development server.
+
+```bash
+npm run dev
+```
+
+Then post a request to the route handler using cURL.
+
+```bash
+curl --request POST \
+  --url http://localhost:3000/api/send-email \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "name": "Paulie Paloma",
+  "email": "paulie@example.com",
+  "message": "Testing the contact form."
+}'
+```
+
+A successful request returns the message ID:
+
+```json
+{
+  "messageId": "06e4491f-fc5a-49cb-bc57-xxxxxx"
+}
+```
+
+Open the **Email logs** page in your SendLayer dashboard to confirm delivery.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Node.js SDK Reference" icon="node-js" href="/sdks/nodejs/introduction">
+    Review every method and parameter in the Node.js SDK.
+  </Card>
+  <Card title="Managing Webhooks" icon="webhook" href="/guides/manage-webhooks">
+    Track opens, clicks, and bounces with webhooks.
+  </Card>
+  <Card title="Retrieving Events" icon="list" href="/guides/get-events">
+    Query delivery events for any message.
+  </Card>
+  <Card title="Rate Limits" icon="clock" href="/api-reference/rate-limit">
+    Understand recipient and request limits.
+  </Card>
+</CardGroup>
