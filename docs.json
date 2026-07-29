@@ -9,92 +9,66 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "groups": "Developer Guides",
-        "pages": [
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
           {
             "group": "Getting Started",
             "pages": [
               "quickstart/introduction",
               "quickstart/installation"
             ]
-
           },
           {
-            "group": "API Reference",
-            "pages": [
-              {
-                "group": "Getting Started",
-                "pages":[
-                  "api-reference/introduction",
-                  "api-reference/rate-limit",
-                  "api-reference/error-codes"
-                ]
-              },
-              {
-                "group": "Email",
-                "pages": [
-                  "api-reference/endpoint/email"
-                ]
-              },
-              {
-                "group": "Events",
-                "pages": [
-                  "api-reference/endpoint/events"
-                ]
-              },
-              {
-                "group": "Webhooks",
-                "pages": [
-                  "api-reference/endpoint/webhooks/get",
-                  "api-reference/endpoint/webhooks/post",
-                  "api-reference/endpoint/webhooks/delete"
-                ]
-              }
-            ]
-
-          },
-          {
-            "group": "SDK Usage",
+            "group": "SDKs",
             "pages": [
               {
                 "group": "JavaScript",
-                "pages":[
-                  "sdks/nodejs/introduction"
+                "pages": [
+                  "sdks/nodejs/introduction",
+                  "sdks/nodejs/send-with-nextjs",
+                  "sdks/nodejs/send-with-expressjs",
+                  "sdks/nodejs/send-with-nuxt"
                 ]
               },
               {
                 "group": "Python",
                 "pages": [
-                  "sdks/python/introduction"
+                  "sdks/python/introduction",
+                  "sdks/python/send-with-flask",
+                  "sdks/python/send-with-fastapi"
                 ]
               },
               {
                 "group": "PHP",
                 "pages": [
-                  "sdks/php/introduction"
+                  "sdks/php/introduction",
+                  "sdks/php/send-with-laravel"
                 ]
               },
               {
                 "group": "Ruby",
                 "pages": [
-                  "sdks/ruby/send-with-ruby"
+                  "sdks/ruby/send-with-ruby",
+                  "sdks/ruby/send-with-rails"
                 ]
               },
               {
                 "group": "Go",
                 "pages": [
-                  "sdks/go/send-with-go"
+                  "sdks/go/send-with-go",
+                  "sdks/go/send-with-gin"
                 ]
               }
             ]
-
           },
           {
             "group": "Guides",
             "pages": [
               {
                 "group": "Sending Emails",
-                "pages":[
+                "pages": [
                   "guides/send-email",
                   "guides/send-email-to-multiple-recipients",
                   "guides/send-email-with-attachments"
@@ -113,7 +87,6 @@
                 ]
               }
             ]
-
           },
           {
             "group": "Integrations",
@@ -127,8 +100,42 @@
               "changelog"
             ]
           }
-        ],
-        
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/rate-limit",
+              "api-reference/error-codes"
+            ]
+          },
+          {
+            "group": "Email",
+            "pages": [
+              "api-reference/endpoint/email"
+            ]
+          },
+          {
+            "group": "Events",
+            "pages": [
+              "api-reference/endpoint/events"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/endpoint/webhooks/get",
+              "api-reference/endpoint/webhooks/post",
+              "api-reference/endpoint/webhooks/delete"
+            ]
+          }
+        ]
+      }
+    ],
     "global": {
       "anchors": [
         {
