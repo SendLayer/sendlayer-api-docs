@@ -1,0 +1,223 @@
+---
+title: 'Send email with Rails'
+sidebarTitle: 'Rails'
+description: 'Learn how to send emails from a Ruby on Rails application using the SendLayer Ruby SDK.'
+icon: 'gem'
+keywords: ['rails', 'ruby on rails', 'ruby', 'send email rails', 'sendlayer', 'rails sdk']
+---
+
+## Prerequisites
+Before getting started, you'll need:
+1. Ruby 3.0 or later
+2. A Rails 7 or Rails 8 application
+3. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+4. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+
+Add the gem to your `Gemfile`.
+
+```ruby Gemfile
+gem 'sendlayer'
+```
+
+Then install it:
+
+```bash
+bundle install
+```
+
+## Storing your API key
+Rails encrypts credentials, so the key can live in the repository safely. Open the encrypted credentials file:
+
+```bash
+bin/rails credentials:edit
+```
+
+Add the key to the file:
+
+```yaml config/credentials.yml.enc
+sendlayer:
+  api_key: your-api-key
+```
+
+Read the value through `Rails.application.credentials`:
+
+```ruby config/initializers/sendlayer.rb
+SENDLAYER = SendLayer::SendLayer.new(
+  Rails.application.credentials.dig(:sendlayer, :api_key)
+)
+```
+
+The initializer runs at boot, so the client is ready before the first request.
+
+<Note>On platforms that inject configuration through the environment, use `ENV.fetch('SENDLAYER_API_KEY')` instead. Keep `config/master.key` out of version control either way.</Note>
+
+## Sending an email from a controller
+Call the client from a controller action. The `emails.send` method accepts a hash of parameters.
+
+```ruby app/controllers/contacts_controller.rb
+class ContactsController < ApplicationController
+  def create
+    response = SENDLAYER.emails.send(
+      from: { email: 'sender@example.com', name: 'Acme Support' },
+      to: [{ email: 'support@example.com', name: 'Support Team' }],
+      reply_to: [{ email: params[:email], name: params[:name] }],
+      subject: "New message from #{params[:name]}",
+      text: params[:message]
+    )
+
+    render json: { message_id: response }, status: :ok
+  end
+end
+```
+
+Add the route:
+
+```ruby config/routes.rb
+Rails.application.routes.draw do
+  post '/contacts', to: 'contacts#create'
+end
+```
+
+The `reply_to` field points at the person who filled in the form, so support agents can reply from their inbox.
+
+<Note>Use a `from` address on a domain you authorized in SendLayer. Requests from an unauthorized domain fail.</Note>
+
+## Moving sends to a background job
+An HTTP call inside a controller action holds the request open. Active Job moves that work to a worker, so the response returns right away.
+
+```ruby app/jobs/send_email_job.rb
+class SendEmailJob < ApplicationJob
+  queue_as :mailers
+  retry_on SendLayer::SendLayerAPIError, wait: 30.seconds, attempts: 5
+
+  def perform(to:, subject:, html:, text:)
+    SENDLAYER.emails.send(
+      from: { email: 'hello@example.com', name: 'Acme' },
+      to: to,
+      subject: subject,
+      html: html,
+      text: text
+    )
+  end
+end
+```
+
+Enqueue the job from the controller:
+
+```ruby app/controllers/signups_controller.rb
+class SignupsController < ApplicationController
+  def create
+    user = User.create!(signup_params)
+
+    SendEmailJob.perform_later(
+      to: user.email,
+      subject: "Welcome, #{user.name}",
+      html: '<p>Your account is ready.</p>',
+      text: 'Your account is ready.'
+    )
+
+    render json: { status: 'accepted' }, status: :accepted
+  end
+
+  private
+
+  def signup_params
+    params.require(:user).permit(:name, :email)
+  end
+end
+```
+
+The `retry_on` line handles transient API failures. Active Job re-runs the job with increasing delays instead of dropping the message.
+
+<Tip>Active Job needs a backing queue in production. The default async adapter loses jobs on restart, so configure Solid Queue, Sidekiq, or another adapter.</Tip>
+
+## Rendering email bodies with ERB templates
+Rails templates give you layouts, partials, and helpers. `ActionController::Base.render` renders any template to a string outside the request cycle, which makes it a good fit for job code.
+
+Add the template:
+
+```erb app/views/emails/welcome.html.erb
+<h1>Welcome, <%= @user.name %></h1>
+<p>Your <%= @user.plan %> plan is active.</p>
+<p><%= link_to 'Sign in to your account', @login_url %></p>
+```
+
+Render the template and pass the output to the SDK:
+
+```ruby app/jobs/welcome_email_job.rb
+class WelcomeEmailJob < ApplicationJob
+  queue_as :mailers
+
+  def perform(user_id)
+    user = User.find(user_id)
+
+    html_body = ActionController::Base.render(
+      template: 'emails/welcome',
+      layout: 'mailer',
+      assigns: { user: user, login_url: 'https://example.com/login' }
+    )
+
+    SENDLAYER.emails.send(
+      from: { email: 'hello@example.com', name: 'Acme' },
+      to: [{ email: user.email, name: user.name }],
+      subject: "Welcome, #{user.name}",
+      html: html_body,
+      text: "Welcome, #{user.name}. Sign in at https://example.com/login.",
+      tags: ['welcome-email']
+    )
+  end
+end
+```
+
+The `tags` array labels the message. Tags appear in your event history, which helps you separate welcome emails from other traffic.
+
+<Tip>Keep email templates in a dedicated layout. Email clients support a narrow subset of CSS, so those views rarely share styles with your web pages.</Tip>
+
+## Testing the endpoint
+
+Start the development server:
+
+```bash
+bin/rails server
+```
+
+Then post a request from another terminal:
+
+```bash
+curl --request POST \
+  --url http://localhost:3000/contacts \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "name": "Paulie Paloma",
+  "email": "paulie@example.com",
+  "message": "Testing the contact endpoint."
+}'
+```
+
+A successful request returns the message ID:
+
+```json
+{
+  "message_id": "06e4491f-fc5a-49cb-bc57-xxxxxx"
+}
+```
+
+Open the **Email logs** page in your SendLayer dashboard to confirm delivery.
+
+## Next steps
+<CardGroup cols={2}>
+  <Card title="Ruby SDK Reference" icon="gem" href="/sdks/ruby/send-with-ruby">
+    Review every method and parameter in the Ruby SDK.
+  </Card>
+  <Card title="Managing Webhooks" icon="webhook" href="/guides/manage-webhooks">
+    Create, list, and delete webhook subscriptions.
+  </Card>
+  <Card title="Retrieving Events" icon="list" href="/guides/get-events">
+    Query delivery events for any message.
+  </Card>
+  <Card title="Rate Limits" icon="clock" href="/api-reference/rate-limit">
+    Understand recipient and request limits.
+  </Card>
+</CardGroup>
