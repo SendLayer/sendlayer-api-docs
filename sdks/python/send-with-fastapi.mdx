@@ -1,0 +1,248 @@
+---
+title: 'Send email with FastAPI'
+sidebarTitle: 'FastAPI'
+description: 'Learn how to send emails from a FastAPI application using the SendLayer Python SDK.'
+icon: 'bolt'
+keywords: ['fastapi', 'python', 'send email', 'sendlayer', 'pydantic', 'background tasks', 'async', 'python sdk']
+---
+
+## Prerequisites
+
+- Python 3.8 or later
+- A FastAPI project with an ASGI server such as Uvicorn
+- Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- Create or retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+
+Install the SDK along with FastAPI, Uvicorn, and `pydantic-settings`.
+
+```bash
+pip install fastapi "uvicorn[standard]" sendlayer pydantic-settings
+```
+
+## Storing your API key
+
+Create a `.env` file in your project root.
+
+```bash .env
+SENDLAYER_API_KEY=your-api-key
+```
+
+Load the value through a settings class. Pydantic raises an error at startup if the key is missing, which surfaces the problem before any request arrives.
+
+```python app/config.py
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
+
+    sendlayer_api_key: str
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+```
+
+Add `.env` to `.gitignore` so the key stays out of version control.
+
+## Creating the email client
+Wrap the client in a cached factory. `lru_cache` returns the same instance on every call, which makes it a clean FastAPI dependency.
+
+```python app/email_client.py
+from functools import lru_cache
+
+from sendlayer import SendLayer
+
+from app.config import get_settings
+
+
+@lru_cache
+def get_sendlayer() -> SendLayer:
+    settings = get_settings()
+    return SendLayer(settings.sendlayer_api_key)
+```
+
+## Defining the request model
+Pydantic validates the payload before your code runs. `EmailStr` rejects malformed addresses, and `min_length` blocks empty fields.
+
+```python app/schemas.py
+from pydantic import BaseModel, EmailStr, Field
+
+
+class ContactRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    email: EmailStr
+    message: str = Field(min_length=1, max_length=5000)
+
+
+class SendResponse(BaseModel):
+    message_id: str
+```
+
+<Note>`EmailStr` requires the `email-validator` package. Install it with `pip install "pydantic[email]"` if it is not already present.</Note>
+
+## Sending an email from an endpoint
+
+Declare the endpoint with `def` rather than `async def`. FastAPI then runs it in a thread pool, so the synchronous SDK call never blocks the event loop.
+
+```python app/main.py
+from fastapi import Depends, FastAPI
+from sendlayer import SendLayer
+
+from app.email_client import get_sendlayer
+from app.schemas import ContactRequest, SendResponse
+
+app = FastAPI(title="Acme Email API")
+
+
+@app.post("/api/send-email", response_model=SendResponse)
+def send_email(
+    payload: ContactRequest,
+    sendlayer: SendLayer = Depends(get_sendlayer),
+):
+    response = sendlayer.Emails.send(
+        sender={"email": "sender@example.com", "name": "Acme Support"},
+        to=[{"email": "support@example.com", "name": "Support Team"}],
+        reply_to=[{"email": payload.email, "name": payload.name}],
+        subject=f"New message from {payload.name}",
+        text=payload.message,
+    )
+
+    return SendResponse(message_id=response)
+```
+
+<Warning>Do not call the SDK from an `async def` endpoint. The call is blocking, which stalls every other request handled by that worker.</Warning>
+
+The `reply_to` field points at the person who filled in the form, so support agents can reply from their inbox.
+
+
+<Note>Use a `sender` address on a domain you authorized in SendLayer. Requests from an unauthorized domain fail.</Note>
+
+Start the server:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+## Sending in the background
+
+For endpoints where the caller does not need the message ID, hand the send to `BackgroundTasks`. FastAPI returns the response first and runs the task afterward.
+
+```python app/routers/signup.py
+from fastapi import APIRouter, BackgroundTasks, Depends, status
+from pydantic import BaseModel, EmailStr
+from sendlayer import SendLayer
+
+from app.email_client import get_sendlayer
+
+router = APIRouter(prefix="/api", tags=["signup"])
+
+
+class SignupRequest(BaseModel):
+    name: str
+    email: EmailStr
+
+
+def send_welcome_email(sendlayer: SendLayer, name: str, email: str) -> None:
+    sendlayer.Emails.send(
+        sender={"email": "hello@example.com", "name": "Acme"},
+        to=email,
+        subject=f"Welcome, {name}",
+        html=(
+            "<html><body>"
+            f"<h1>Welcome, {name}</h1>"
+            "<p>Your account is ready. "
+            "<a href='https://example.com/login'>Sign in</a> to get started.</p>"
+            "</body></html>"
+        ),
+        text=f"Welcome, {name}. Sign in at https://example.com/login to get started.",
+        tags=["welcome-email"],
+    )
+
+
+@router.post("/signup", status_code=status.HTTP_202_ACCEPTED)
+def signup(
+    payload: SignupRequest,
+    background_tasks: BackgroundTasks,
+    sendlayer: SendLayer = Depends(get_sendlayer),
+):
+    background_tasks.add_task(send_welcome_email, sendlayer, payload.name, payload.email)
+    return {"status": "accepted"}
+```
+
+Include the router in your application:
+
+```python app/main.py
+from fastapi import FastAPI
+
+from app.routers import signup
+
+app = FastAPI(title="Acme Email API")
+app.include_router(signup.router)
+```
+
+<Tip>Background tasks run in the same process. For high volume or retry logic, move sends to a dedicated queue such as Celery or Dramatiq.</Tip>
+
+## Testing the endpoint
+Start the server, then post a request from another terminal.
+
+```bash
+uvicorn app.main:app --reload
+```
+
+```bash
+curl --request POST \
+  --url http://localhost:8000/api/send-email \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "name": "Paulie Paloma",
+  "email": "paulie@example.com",
+  "message": "Testing the FastAPI endpoint."
+}'
+```
+
+A successful request returns the message ID:
+
+```json
+{
+  "message_id": "06e4491f-fc5a-49cb-bc57-xxxxxx"
+}
+```
+
+You can also open `http://localhost:8000/docs` and send the request from the generated Swagger interface.
+
+<Check>Open the **Email Logs** page in your SendLayer dashboard to confirm delivery.</Check>
+
+## Next Steps
+<CardGroup cols={2}>
+  <Card title="Python SDK Reference" icon="python" href="/sdks/python/introduction">
+    Review every method and parameter in the Python SDK.
+  </Card>
+  <Card title="Managing Webhooks" icon="webhook" href="/guides/manage-webhooks">
+    Create, list, and delete webhook subscriptions.
+  </Card>
+  <Card title="Retrieving Events" icon="list" href="/guides/get-events">
+    Query delivery events for any message.
+  </Card>
+  <Card title="Rate Limits" icon="clock" href="/api-reference/rate-limit">
+    Understand recipient and request limits.
+  </Card>
+</CardGroup>
+
+## Frequently asked questions
+<AccordionGroup>
+  <Accordion title="Why is the parameter called sender instead of from?">
+    `from` is a reserved keyword in Python, so it cannot be a keyword argument. The Python SDK uses `sender` for the sending address.
+  </Accordion>
+  <Accordion title="Why does my endpoint return a 422 error?">
+    Pydantic rejected the payload. The response body lists each failing field, so check that the request matches your request model.
+  </Accordion>
+  <Accordion title="How do I keep the API key out of the code?">
+    Load it from the environment through a `Settings` class. Uvicorn reads the process environment, so hosting platforms can inject the value at deploy time.
+  </Accordion>
+</AccordionGroup>
