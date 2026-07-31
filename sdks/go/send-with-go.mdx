@@ -1,15 +1,20 @@
 ---
-title: 'Golang SDK'
-description: 'Learn how to install and use the SendLayer Go SDK.'
+title: 'Send email with Go'
+sidebarTitle: 'Golang'
+description: 'Learn how to send emails from a Go application using the SendLayer Go SDK.'
 icon: 'golang'
+keywords: ['go', 'send email go', 'sendlayer', 'go sdk']
 ---
 
 ## Prerequisites
+
 Before getting started, you'll need to:
+
 1. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
 2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
 
 ## Installation
+
 Install the SendLayer Go SDK using the `go get` command:
 
 ```bash
@@ -19,7 +24,7 @@ go get github.com/sendlayer/sendlayer-go
 ## Usage
 After installation, you can use the SDK modules for sending emails, managing webhooks, and retrieving email events.
 
-### Send Email in Golang
+### Send email in Go
 
 Initialize the client and call `sl.Emails.Send()` with a `SendEmailRequest`.
 
@@ -52,7 +57,8 @@ func main() {
 }
 ```
 
-#### Send HTML Emails in Go
+#### Send HTML emails in Go
+
 To send HTML emails, set the `Html` field in the request payload.
 
 ```go sendEmail.go
@@ -85,7 +91,8 @@ func main() {
 ```
 <Note>You can include both `Text` and `Html` to send plain text and HTML versions of the same email.</Note>
 
-#### Send Email to Multiple Recipients
+#### Send email to multiple recipients
+
 Use `EmailAddress` objects to send to multiple recipients, including `Cc`, `Bcc`, and `ReplyTo`.
 
 ```go sendEmail.go
@@ -125,11 +132,13 @@ func main() {
 	fmt.Println("Email sent! Message ID:", resp.MessageID)
 }
 ```
+
 `From` and `To` accept either a string email or `EmailAddress` values. `Cc`, `Bcc`, and `ReplyTo` support the same flexible format.
 
 <Note>There are limits to the number of email recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide to learn more.</Note>
 
-#### Include Attachments in Email
+#### Include attachments in email
+
 Include attachments by setting the `Attachments` field in `SendEmailRequest`.
 
 ```go sendEmail.go
@@ -165,13 +174,15 @@ func main() {
 	fmt.Println("Email sent! Message ID:", resp.MessageID)
 }
 ```
+
 <Warning>The maximum email size SendLayer allows is 10MB. This includes both the message as well as attachment files.</Warning>
 
 Set `Path` to your local file path or hosted file URL, then set the file `Type` (MIME type).
 
 SendLayer SDK supports both local and remote file attachments and allows you to add multiple attachment files. See our tutorial to learn more about [attaching files to emails](/guides/send-email-with-attachments).
 
-#### Email Request Parameters
+#### Email request parameters
+
 The table below contains the supported fields in `SendEmailRequest`.
 
 | Field | Type | Required | Description |
@@ -188,10 +199,12 @@ The table below contains the supported fields in `SendEmailRequest`.
 | `Headers` | `map[string]string` | No | Custom email headers |
 | `Tags` | `[]string` | No | Tags for categorizing emails |
 
-### Manage Webhooks in Go
+### Manage webhooks in Go
+
 With the SendLayer Go SDK, you can create, list, and delete webhooks.
 
-#### Create a New Webhook
+#### Create a new webhook
+
 Call `Webhooks.Create()` with a `WebhookCreateRequest`.
 
 ```go webhooks.go
@@ -219,7 +232,9 @@ func main() {
 	fmt.Println("Webhook created! ID:", webhook.WebhookID)
 }
 ```
-The `Event` field accepts the following options:
+
+The `Event` field accepts the following values:
+
 - bounce
 - click
 - open
@@ -235,7 +250,8 @@ Example success response for new webhook:
 }
 ```
 
-#### Get All Webhooks
+#### Get all webhooks
+
 To view all the webhooks you've created, use the `Webhooks.Get()` method.
 
 ```go webhooks.go
@@ -261,7 +277,8 @@ func main() {
 }
 ```
 
-Here is an example response:
+Example response:
+
 ```json
 {
   "Webhooks": [
@@ -281,7 +298,8 @@ Here is an example response:
 }
 ```
 
-#### Delete a Webhook
+#### Delete a webhook
+
 To delete a specific webhook, pass the webhook ID to `Webhooks.Delete()`.
 
 <Warning>Deleting a webhook cannot be undone.</Warning>
@@ -310,7 +328,8 @@ func main() {
 }
 ```
 
-#### Webhook Request Parameters
+#### Webhook request parameters
+
 The table below contains the supported inputs in the `Webhooks` module.
 
 | Parameter | Type | Required | Description |
@@ -319,11 +338,12 @@ The table below contains the supported inputs in the `Webhooks` module.
 | `Event` | `string` | Yes (create) | Event type for the webhook subscription |
 | `webhookId` | `int` | Yes (delete) | Unique webhook ID to delete |
 
-### Retrieve Email Events
+### Retrieve email events
 
 Use the `Events` module to retrieve email delivery and engagement events.
 
-#### Get All Events
+#### Get all events
+
 Initialize the client and call `Events.Get(nil)` to retrieve recent events.
 
 ```go events.go
@@ -378,7 +398,8 @@ Example response:
 }
 ```
 
-#### Filter Events
+#### Filter events
+
 Pass a `GetEventsRequest` to filter by date range and event type.
 
 ```go events.go
@@ -413,7 +434,7 @@ func main() {
 }
 ```
 
-#### Event Request Parameters
+#### Event request parameters
 
 The table below contains supported fields in `GetEventsRequest`.
 
@@ -426,7 +447,7 @@ The table below contains supported fields in `GetEventsRequest`.
 | `StartFrom` | `*int` | No | Starting offset for paginated event results |
 | `RetrieveCount` | `*int` | No | Number of records to return |
 
-## Error Handling
+## Error handling
 
 The SDK returns typed errors you can inspect with `errors.As`.
 
@@ -475,7 +496,8 @@ Here is an example error response:
 Error: Invalid event name - 'opened' is not a valid event name
 ```
 
-## More Go SDK Examples
+## More examples
+
 <Card title="SendLayer Go SDK" icon="github" href="https://github.com/sendlayer/sendlayer-go" arrow="true" cta="View more examples">
   View more details and examples on GitHub.
 </Card>

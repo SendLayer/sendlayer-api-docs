@@ -1,0 +1,235 @@
+---
+title: 'Send email with Laravel'
+sidebarTitle: 'Laravel'
+description: 'Learn how to send emails from a Laravel application using the SendLayer PHP SDK.'
+icon: 'laravel'
+keywords: ['laravel', 'php', 'send email', 'sendlayer', 'service container', 'queue', 'blade', 'php sdk']
+---
+
+## Prerequisites
+
+Before getting started, you'll need to:
+1. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+
+Install the SendLayer PHP SDK using Composer:
+
+```bash
+composer require sendlayer/sendlayer-php
+```
+
+## Storing your API key
+
+Create a `.env` file in your project root and add your API key:
+
+```bash .env
+SENDLAYER_API_KEY=your-api-key
+SENDLAYER_FROM_ADDRESS=sender@example.com
+SENDLAYER_FROM_NAME="Acme Support"
+```
+
+Read those values through a config file rather than calling `env()` from application code. Config caching in production returns `null` for direct `env()` calls outside config files.
+
+```php config/sendlayer.php
+<?php
+
+return [
+    'api_key' => env('SENDLAYER_API_KEY'),
+
+    'from' => [
+        'email' => env('SENDLAYER_FROM_ADDRESS', 'sender@example.com'),
+        'name' => env('SENDLAYER_FROM_NAME', 'Acme'),
+    ],
+];
+```
+
+<Warning>Calling `env()` outside a config file breaks after you run `php artisan config:cache`. Use `config('sendlayer.api_key')` in controllers, jobs, and services.</Warning>
+
+## Registering the client in the container
+Bind the client as a singleton in `AppServiceProvider`. Laravel then builds one instance per request lifecycle and injects it wherever you type-hint it.
+
+```php app/Providers/AppServiceProvider.php
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use SendLayer\SendLayer;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->singleton(SendLayer::class, function () {
+            $apiKey = config('sendlayer.api_key');
+
+            if (empty($apiKey)) {
+                throw new \RuntimeException('SENDLAYER_API_KEY is not set');
+            }
+
+            return new SendLayer($apiKey);
+        });
+    }
+}
+```
+
+The check throws on a missing key at resolution time, which surfaces the problem before an API request goes out.
+
+## Sending an email from a controller
+Type-hint the client in the constructor. Laravel resolves it from the container automatically.
+
+```php app/Http/Controllers/ContactController.php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use SendLayer\SendLayer;
+
+class ContactController extends Controller
+{
+    public function __construct(private SendLayer $sendlayer)
+    {
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email'],
+            'message' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $response = $this->sendlayer->Emails->send([
+            'from' => config('sendlayer.from'),
+            'to' => [['email' => 'support@example.com', 'name' => 'Support Team']],
+            'replyTo' => [['email' => $validated['email'], 'name' => $validated['name']]],
+            'subject' => "New message from {$validated['name']}",
+            'text' => $validated['message'],
+        ]);
+
+        return response()->json(['message_id' => $response]);
+    }
+}
+```
+
+Laravel's `validate()` method rejects malformed payloads with a `422` response before the SDK runs. The `replyTo` field points at the person who filled in the form, so support agents can reply from their inbox.
+
+Add the route:
+
+```php routes/api.php
+use App\Http\Controllers\ContactController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('/contact', [ContactController::class, 'store']);
+```
+
+<Note>Use a `from` address on a domain you authorized in SendLayer. Requests from an unauthorized domain fail.</Note>
+
+## Rendering email bodies with Blade
+
+Blade views give you layouts, components, and partials. 
+
+```blade resources/views/emails/welcome.blade.php
+<h1>Welcome, {{ $name }}</h1>
+<p>Your {{ $plan }} plan is active.</p>
+<p><a href="{{ $loginUrl }}">Sign in to your account</a></p>
+```
+
+Render a view to a string with the `view()` helper, then pass the result as the `html` parameter.
+
+```php app/Jobs/SendWelcomeEmail.php
+<?php
+
+namespace App\Jobs;
+
+use App\Models\User;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+use SendLayer\SendLayer;
+
+class SendWelcomeEmail implements ShouldQueue
+{
+    use Dispatchable, SerializesModels;
+
+    public function __construct(private User $user)
+    {
+    }
+
+    public function handle(SendLayer $sendlayer): void
+    {
+        $html = view('emails.welcome', [
+            'name' => $this->user->name,
+            'plan' => $this->user->plan,
+            'loginUrl' => route('login'),
+        ])->render();
+
+        $sendlayer->Emails->send([
+            'from' => config('sendlayer.from'),
+            'to' => [['email' => $this->user->email, 'name' => $this->user->name]],
+            'subject' => "Welcome, {$this->user->name}",
+            'html' => $html,
+            'text' => "Welcome, {$this->user->name}. Sign in at " . route('login'),
+            'tags' => ['welcome-email'],
+        ]);
+    }
+}
+```
+
+The `tags` array labels the message. Tags appear in your event history, which helps you separate welcome emails from other traffic.
+
+<Tip>Keep email views in their own directory. Email clients support a narrow subset of CSS, so those templates rarely share styles with your web pages.</Tip>
+
+## Testing the endpoint
+
+Start the development server:
+
+```bash
+php artisan serve
+```
+
+Then post a request from another terminal:
+
+```bash
+curl --request POST \
+  --url http://localhost:8000/api/contact \
+  --header 'Content-Type: application/json' \
+  --header 'Accept: application/json' \
+  --data '{
+  "name": "Paulie Paloma",
+  "email": "paulie@example.com",
+  "message": "Testing the contact endpoint."
+}'
+```
+
+A successful request returns the message ID:
+
+```json
+{
+  "message_id": "06e4491f-fc5a-49cb-bc57-xxxxxx"
+}
+```
+
+<Note>Include the `Accept: application/json` header. Without it, Laravel returns validation errors as a redirect rather than JSON.</Note>
+
+Open the **Email logs** page in your SendLayer dashboard to confirm delivery.
+
+## Next steps
+<CardGroup cols={2}>
+  <Card title="PHP SDK Reference" icon="php" href="/sdks/php/introduction">
+    Review every method and parameter in the PHP SDK.
+  </Card>
+  <Card title="Managing Webhooks" icon="webhook" href="/guides/manage-webhooks">
+    Create, list, and delete webhook subscriptions.
+  </Card>
+  <Card title="Retrieving Events" icon="list" href="/guides/get-events">
+    Query delivery events for any message.
+  </Card>
+  <Card title="Rate Limits" icon="clock" href="/api-reference/rate-limit">
+    Understand recipient and request limits.
+  </Card>
+</CardGroup>

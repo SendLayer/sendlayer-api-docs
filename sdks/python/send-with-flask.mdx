@@ -1,0 +1,267 @@
+---
+title: 'Send email with Flask'
+sidebarTitle: 'Flask'
+description: 'Learn how to send emails from a Flask application using the SendLayer Python SDK.'
+icon: 'flask'
+keywords: ['flask', 'python', 'send email', 'sendlayer', 'blueprint', 'application factory', 'python sdk']
+---
+
+## Prerequisites
+- Python 3.8 or later
+- A Flask 2 or Flask 3 project
+- Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
+- Create or retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
+
+## Installation
+
+Install the SDK along with Flask and `python-dotenv`.
+
+```bash
+pip install flask sendlayer python-dotenv
+```
+
+## Storing your API key
+Create a `.env` file in your project root.
+
+```bash .env
+SENDLAYER_API_KEY=your-api-key
+FLASK_APP=app
+```
+
+Add `.env` to `.gitignore` so the key stays out of version control.
+
+## Creating the email client
+Initialize the client once when the application starts and share it across routes. A module-level instance avoids rebuilding the client on every request.
+
+```python app/email_client.py
+import os
+
+from dotenv import load_dotenv
+from sendlayer import SendLayer
+
+load_dotenv()
+
+api_key = os.environ.get("SENDLAYER_API_KEY")
+
+if not api_key:
+    raise RuntimeError("SENDLAYER_API_KEY is not set")
+
+sendlayer = SendLayer(api_key)
+```
+
+The startup check fails fast on a missing key. Without it, the first request becomes the place the problem surfaces.
+
+## Sending an email from a route
+Add a POST route that reads JSON and calls `Emails.send()`.
+
+```python app/__init__.py
+from flask import Flask, jsonify, request
+
+from app.email_client import sendlayer
+
+
+def create_app():
+    app = Flask(__name__)
+
+    @app.post("/api/send-email")
+    def send_email():
+        data = request.get_json()
+
+        response = sendlayer.Emails.send(
+            sender={"email": "sender@example.com", "name": "Acme Support"},
+            to=[{"email": "support@example.com", "name": "Support Team"}],
+            reply_to=[{"email": data["email"], "name": data["name"]}],
+            subject=f"New message from {data['name']}",
+            text=data["message"],
+        )
+
+        return jsonify({"message_id": response}), 200
+
+    return app
+```
+
+The `reply_to` field points at the person who filled in the form, so support agents can reply from their inbox.
+
+<Note>Use a `sender` address on a domain you authorized in SendLayer. Requests from an unauthorized domain fail.</Note>
+
+Run the application:
+
+```bash
+flask run
+```
+
+## Organizing routes with a blueprint
+A blueprint keeps email routes separate from the rest of the application. This structure scales better once you add more endpoints.
+
+```python app/routes/email.py
+from flask import Blueprint, jsonify, request
+
+from app.email_client import sendlayer
+
+email_bp = Blueprint("email", __name__, url_prefix="/api")
+
+
+@email_bp.post("/send-email")
+def send_email():
+    data = request.get_json(silent=True) or {}
+
+    missing = [field for field in ("email", "subject", "message") if not data.get(field)]
+    if missing:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing)}"}), 400
+
+    response = sendlayer.Emails.send(
+        sender="sender@example.com",
+        to=data["email"],
+        subject=data["subject"],
+        text=data["message"],
+    )
+
+    return jsonify({"message_id": response})
+```
+
+Register the blueprint in your factory:
+
+```python app/__init__.py
+from flask import Flask
+
+from app.routes.email import email_bp
+
+
+def create_app():
+    app = Flask(__name__)
+    app.register_blueprint(email_bp)
+    return app
+```
+
+Validating the payload first saves a round trip to the API and returns a clearer error to the caller.
+
+## Sending HTML emails
+Add the `html` parameter for rich content. Keep `text` as a fallback for clients that block HTML.
+
+```python app/routes/welcome.py
+from flask import Blueprint, jsonify, request
+
+from app.email_client import sendlayer
+
+welcome_bp = Blueprint("welcome", __name__, url_prefix="/api")
+
+
+@welcome_bp.post("/welcome")
+def send_welcome_email():
+    data = request.get_json()
+
+    response = sendlayer.Emails.send(
+        sender={"email": "hello@example.com", "name": "Acme"},
+        to=data["email"],
+        subject="Welcome to Acme",
+        html=(
+            "<html><body>"
+            "<h1>Welcome aboard</h1>"
+            "<p>Your account is ready. "
+            "<a href='https://example.com/login'>Sign in</a> to get started.</p>"
+            "</body></html>"
+        ),
+        text="Your account is ready. Sign in at https://example.com/login to get started.",
+        tags=["welcome-email"],
+    )
+
+    return jsonify({"message_id": response})
+```
+
+The `tags` list labels the message. Tags appear in your event history, which helps you separate welcome emails from other traffic.
+
+## Rendering emails with Jinja templates
+
+Flask already renders Jinja templates, so you can reuse that engine for email bodies. Place the template under `templates/emails/`.
+
+```html templates/emails/welcome.html
+<html>
+  <body>
+    <h1>Welcome, {{ name }}</h1>
+    <p>Your {{ plan }} plan is active.</p>
+    <p><a href="{{ login_url }}">Sign in to your account</a></p>
+  </body>
+</html>
+```
+
+Render the template, then pass the result as the `html` parameter.
+
+```python app/routes/welcome.py
+from flask import Blueprint, jsonify, render_template, request
+
+from app.email_client import sendlayer
+
+welcome_bp = Blueprint("welcome", __name__, url_prefix="/api")
+
+
+@welcome_bp.post("/welcome")
+def send_welcome_email():
+    data = request.get_json()
+
+    html_body = render_template(
+        "emails/welcome.html",
+        name=data["name"],
+        plan=data.get("plan", "Starter"),
+        login_url="https://example.com/login",
+    )
+
+    response = sendlayer.Emails.send(
+        sender={"email": "hello@example.com", "name": "Acme"},
+        to=data["email"],
+        subject=f"Welcome, {data['name']}",
+        html=html_body,
+        text=f"Welcome, {data['name']}. Sign in at https://example.com/login.",
+    )
+
+    return jsonify({"message_id": response})
+```
+
+<Tip>Keep email templates in their own folder. Email clients support a narrow subset of CSS, so those files rarely share styles with your web pages.</Tip>
+
+## Testing the endpoint
+
+Start the development server.
+
+```bash
+flask run
+```
+
+Then post a request from another terminal:
+
+```bash
+curl --request POST \
+  --url http://localhost:5000/api/send-email \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "email": "paulie@example.com",
+  "subject": "Testing Flask",
+  "message": "Testing the send endpoint."
+}'
+```
+
+A successful request returns the message ID:
+
+```json
+{
+  "message_id": "06e4491f-fc5a-49cb-bc57-xxxxxx"
+}
+```
+
+Open the **Email logs** page in your SendLayer dashboard to confirm delivery.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Python SDK Reference" icon="python" href="/sdks/python/introduction">
+    Review every method and parameter in the Python SDK.
+  </Card>
+  <Card title="Managing Webhooks" icon="webhook" href="/guides/manage-webhooks">
+    Create, list, and delete webhook subscriptions.
+  </Card>
+  <Card title="Retrieving Events" icon="list" href="/guides/get-events">
+    Query delivery events for any message.
+  </Card>
+  <Card title="Rate Limits" icon="clock" href="/api-reference/rate-limit">
+    Understand recipient and request limits.
+  </Card>
+</CardGroup>

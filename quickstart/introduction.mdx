@@ -1,18 +1,18 @@
 ---
 title: 'Quickstart'
-description: 'Learn how to quickly setup and use SendLayer SDKs'
+description: 'Learn how to quickly setup and use SendLayer email API to send transactional emails'
 icon: 'rocket'
 ---
 
-## Overview
-SendLayer API provides a playground for developers to interact with various endpoints and send API requests. With the API, you can send emails, create and manage webhooks. Additionally, you can retrieve and monitor events related to your SendLayer account.
+## Prerequisites
 
-Before you can use the SendLayer API, you'll need to [authorize your domain]('https://sendlayer.com/docs/authorizing-your-domain/). Domain verification is an important steps and it helps proves domain ownership and improves email deliverability.
+Before you can use the SendLayer API, you'll need to [authorize your sending domain](https://sendlayer.com/docs/authorizing-your-domain/). This is an important step as it proves domain ownership and improves email deliverability.
 
-After authorizing your domain, you'll need to create/retrieve your [API key]('https://sendlayer.com/docs/managing-api-keys/'). An API key is used to authenticate API requests.
+After authorizing your domain, you'll need to create/retrieve your [API key](https://sendlayer.com/docs/managing-api-keys/). An API key is used to authenticate API requests.
 
-### Installation
-Run the command below to install the SendLayer SDK:
+## Installation
+
+Run the command below to install the SendLayer SDK for your preferred programming language:
 
 <CodeGroup>
 ```bash javascript
@@ -32,7 +32,8 @@ go get github.com/sendlayer/sendlayer-go
 ```
 </CodeGroup>
 
-### Sending an Email
+## Sending an email
+
 Once, you've installed the SDK, you can import it directly into your codebase and interact with the API. Here's an example of how to send an email using the SendLayer API:
 
 <CodeGroup>
@@ -157,7 +158,7 @@ SendLayer API also allows you to send emails to [multiple recipients](/guides/se
 
 <Note>See our guide to learn more about [sending emails using SendLayer API](/guides/send-email).</Note>
 
-## Client SDKs
+## SDK reference
 SendLayer offers SDK libraries for popular programming languages that simplify the process of integrating with the API. We currently offer/support the following SDKs:
 <CardGroup cols={2}>
   <Card title="Node.js" icon="node-js" href="/sdks/nodejs">

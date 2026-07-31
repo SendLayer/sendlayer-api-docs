@@ -1,26 +1,30 @@
 ---
-title: 'Python SDK'
+title: 'Send email with Python'
+sidebarTitle: 'Python'
 description: 'Learn how to install and use the SendLayer Python SDK.'
 icon: 'python'
 ---
 
 ## Prerequisites
+
 Before getting started, you'll need to:
+
 1. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
 2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
 
 ## Installation
-Install the SendLayer Python SDK using the command:
+Install the SendLayer Python SDK using `pip`.
 
 ```bash
 pip install sendlayer
 ```
 
 ## Usage
+
 After the installation completes, you're ready to start integrating the SDK to your code. The SDK includes modules to send emails, manage webhooks and events.
 
 
-### Sending an Email
+### Sending an email
 Create a new `.py` file or edit an existing one. Then import the `SendLayer` module. Once done, you'll need to initialize the module with your SendLayer API key.
 
 ```python send_email.py
@@ -38,7 +42,7 @@ response = sendlayer.Emails.send(
 )
 ```
 
-#### Sending HTML Emails
+#### Sending HTML emails
 To send HTML emails, simply include the `html` parameter to the `send()` method. 
 
 ```python send_email.py
@@ -58,7 +62,7 @@ response = sendlayer.Emails.send(
 
 <Note>You can include the `text` parameter to have a plain text and HTML version of your email message</Note>
 
-#### Sending to Multiple Recipients
+#### Sending to multiple recipients
 You can send emails to multiple recipients including `"Cc"` and `"BCC"` email addresses.
 
 ```python send_email.py
@@ -86,7 +90,7 @@ Each recipient field is an array containing the recipient's `name` and `email` a
 
 <Note>There are limits to the number of email recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide to learn more.</Note>
 
-#### Including Attachments
+#### Including attachments
 You can include attachments to your email message by adding the `attachments` parameter to the email payload.
 
 ```python send_email.py
@@ -117,7 +121,7 @@ Simply replace the `path` parameter with the path to the attachment file you wis
 SendLayer SDK supports both local and remote file attachments and allows you to add multiple attachment files. See our tutorial to learn more about [attaching files to emails](/guides/send-email-with-attachments).
 
 
-#### Email Parameters
+#### Email parameters
 Below is a table containing the supported parameters for sending emails in Python using SendLayer SDK.
 
 | Parameter | Type | Required | Description |
@@ -134,10 +138,12 @@ Below is a table containing the supported parameters for sending emails in Pytho
 | `tags` | `list` | No | List of strings used to add tags to email messages |
 | `headers` | `dict` | No | Dictionary with key-value pairs for adding custom email headers |
 
-### Managing Webhooks
+### Managing webhooks
+
 With the SendLayer Python SDK, you can create new webhook, view all webhooks you've created and also delete a specific webhook.
 
-#### Creating a New Webhook
+#### Creating a new webhook
+
 To create a new webhook, you'll need to first import the SendLayer module and initialize it with your API key.
 
 Then call the `Webhooks.create()` method and specify the required parameters. This method requires the `url` and `event` parameters.
@@ -161,7 +167,7 @@ The `event` parameter is constrained to the following options:
 - complaint
 - delivery
 
-Example success response for new wehbook:
+Example success response for new webhook:
 
 ```json
 {
@@ -169,7 +175,7 @@ Example success response for new wehbook:
 }
 ```
 
-#### Getting All Webhooks
+#### Getting all webhooks
 To view all the webhooks you've created, use the `Webhooks.get()` method.
 
 ```python webhooks.py
@@ -201,7 +207,7 @@ Here is an example response:
 }
 ```
 
-#### Deleting a Webhook
+#### Deleting a webhook
 To delete a specific webhook, use the `Webhooks.delete()` method. This method accepts one required parameter `webhook_id` that needs to be a number.
 
 <Danger> Deleting a webhook cannot be undone. You won't be able to recover or access your webhook after deleting it.</Danger>
@@ -216,7 +222,7 @@ webhook_id = 23718
 sendlayer.Webhooks.delete(webhook_id)
 ```
 
-#### Webhooks Parameters
+#### Webhooks parameters
 The table below contains details about the supported parameters in the `Webhooks` module.
 
 | Parameter | Type | Required | Description |
@@ -225,10 +231,10 @@ The table below contains details about the supported parameters in the `Webhooks
 | `event` | `string` | Yes | The type of event to listen for. Options: bounce, click, open, unsubscribe, complaint, delivery |
 | `webhook_id` | `integer` | Yes | Unique identifier for the webhook (used in delete operation) |
 
-### Retrieving Email Events
+### Retrieving email events
 You can view all events connected to your API key. 
 
-#### Getting All Events
+#### Getting all events
 To get started, import the `SendLayer` module and initialize it with your API key. Then call the `Events.get()` method to retrieve all events.
 
 <Note> The `Events.get()` method retrieves the top 5 events in your account if no filter parameter is specified.</Note>
@@ -269,7 +275,8 @@ Example response
 }
 ```
 
-#### Filtering Events
+#### Filtering events
+
 The `Events.get()` method in the `SendLayer` module accepts some optional parameters. These parameters can be used to filter the API response. Here is an example:
 
 ```python events.py
@@ -286,7 +293,7 @@ events = sendlayer.Events.get(
 )
 ```
 
-#### Events Parameters
+#### Events parameters
 The table below contains details about the available parameters in the `Events` module.
 
 | Parameter | Type | Required | Description |
@@ -298,7 +305,7 @@ The table below contains details about the available parameters in the `Events` 
 | `start_from` | `integer` | No | Specify a starting number for the email filter |
 | `retrieve_count` | `integer` | No | This parameter controls the number of event records that'll be displayed. It defaults to 5 if none is specified |
 
-## Error Handling
+## Error handling
 
 The SDK provides custom exceptions for better error handling. You can import the `SendLayerError` or `SendLayerAPIError` modules, then use Python's `try` & `exception` syntax when sending your emails:
 
@@ -325,7 +332,8 @@ Here is an example error response:
 Error: Invalid event name - 'opened' is not a valid event name
 ```
 
-## More Examples
+## More examples
+
 <Card title="SendLayer Python SDK" icon="github" href="https://github.com/SendLayer/sendlayer-python" arrow="true" cta="View more examples">
   View more details and examples on GitHub.
 </Card>
