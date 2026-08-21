@@ -1,0 +1,514 @@
+name: SDK release → docs PR
+
+# Opens a reviewed PR updating the docs surfaces an SDK release actually touched.
+#
+# Triggered by a repository_dispatch from an SDK repo's publish workflow.
+#
+# IMPORTANT — why the sender is a job inside publish.yaml and not an
+# `on: release: published` workflow in the SDK repo: all five SDK repos create
+# their release with `softprops/action-gh-release` authenticated by GITHUB_TOKEN,
+# and events created by GITHUB_TOKEN never start new workflow runs. Verified:
+# every release in sendlayer-node and sendlayer-go is authored
+# `github-actions[bot]`. A release-triggered workflow there would silently never
+# fire, with no error anywhere.
+
+on:
+  repository_dispatch:
+    types: [sdk-release]
+
+  # The same inputs, for manual replay, backfill, and dry runs.
+  #
+  # Not optional: repository_dispatch always runs the DEFAULT BRANCH copy of this
+  # file, so a receiver on a feature branch is unreachable and produces no run
+  # and no error. workflow_dispatch is the only way to test a change on a branch.
+  workflow_dispatch:
+    inputs:
+      sdk:
+        description: 'SDK id: node | python | php | ruby | go'
+        required: true
+      version:
+        description: 'Released version, no leading v (e.g. 1.0.3)'
+        required: true
+      prev_tag:
+        description: 'Override the previous tag used for the diff (blank = auto)'
+        required: false
+      dry_run:
+        description: 'Build the diff and publish it as an artifact, do not open a PR'
+        type: boolean
+        default: true
+      force:
+        description: 'Proceed even if already documented / branch exists'
+        type: boolean
+        default: false
+
+run-name: >-
+  ${{ github.event.client_payload.sdk || inputs.sdk }}
+  v${{ github.event.client_payload.version || inputs.version }}${{
+  (github.event.client_payload.dry_run || inputs.dry_run) && ' · dry run' || '' }}
+
+# Serialise per SDK. Never cancel: a cancelled run can leave a half-written
+# branch pushed with no PR attached to it.
+concurrency:
+  group: docs-release-${{ github.event.client_payload.sdk || inputs.sdk }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  SDK_DIR: ${{ github.workspace }}/_sdk
+  SDK_PREV_DIR: ${{ github.workspace }}/_sdk_prev
+  RELEASE_DIR: ${{ runner.temp }}/release
+
+jobs:
+  # ---------------------------------------------------------------- #
+  plan:
+    name: Validate and decide
+    runs-on: ubuntu-latest
+    outputs:
+      sdk: ${{ steps.norm.outputs.sdk }}
+      version: ${{ steps.norm.outputs.version }}
+      tag: ${{ steps.norm.outputs.tag }}
+      branch: ${{ steps.norm.outputs.branch }}
+      dry_run: ${{ steps.norm.outputs.dry_run }}
+      force: ${{ steps.norm.outputs.force }}
+      repo: ${{ steps.profile.outputs.repo }}
+      sdk_name: ${{ steps.profile.outputs.sdk_name }}
+      prev_tag: ${{ steps.tags.outputs.prev_tag }}
+      proceed: ${{ steps.dedupe.outputs.proceed }}
+      skip_reason: ${{ steps.dedupe.outputs.skip_reason }}
+    steps:
+      # Untrusted payload fields travel through env, never interpolated into a
+      # run: body. This is both the injection defence and the typo defence.
+      - name: Normalise and validate the payload
+        id: norm
+        env:
+          IN_SDK: ${{ github.event.client_payload.sdk || inputs.sdk }}
+          IN_VERSION: ${{ github.event.client_payload.version || inputs.version }}
+          IN_PRERELEASE: ${{ github.event.client_payload.prerelease || 'false' }}
+          IN_DRY_RUN: ${{ github.event.client_payload.dry_run || inputs.dry_run }}
+          IN_FORCE: ${{ github.event.client_payload.force || inputs.force }}
+          IN_SCHEMA: ${{ github.event.client_payload.schema || '1' }}
+        run: |
+          set -euo pipefail
+          [ "$IN_SCHEMA" = "1" ] || { echo "::error::unsupported payload schema '$IN_SCHEMA'"; exit 1; }
+          printf '%s' "$IN_SDK" | grep -Eq '^(node|python|php|ruby|go)$' \
+            || { echo "::error::unknown sdk id '$IN_SDK'"; exit 1; }
+          printf '%s' "$IN_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            || { echo "::error::not a stable release version: '$IN_VERSION'"; exit 1; }
+          if [ "$IN_PRERELEASE" = "true" ] && [ "${IN_FORCE:-false}" != "true" ]; then
+            echo "::error::'$IN_VERSION' is flagged prerelease; docs describe the latest stable"
+            exit 1
+          fi
+          {
+            echo "sdk=$IN_SDK"
+            echo "version=$IN_VERSION"
+            echo "tag=v$IN_VERSION"
+            echo "branch=docs-bot/$IN_SDK-v$IN_VERSION"
+            echo "dry_run=${IN_DRY_RUN:-false}"
+            echo "force=${IN_FORCE:-false}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check out the docs repo
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Load the SDK profile
+        id: profile
+        env:
+          SDK: ${{ steps.norm.outputs.sdk }}
+        run: |
+          set -euo pipefail
+          read -r repo name < <(node -e '
+            const { sdkOrDie } = await import("./.github/scripts/lib/sdk-registry.mjs");
+            const s = sdkOrDie(process.env.SDK);
+            process.stdout.write(`${s.repo} ${s.changelogHeading}`);
+          ' --input-type=module)
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+          echo "sdk_name=$name" >> "$GITHUB_OUTPUT"
+
+      # This repo's GITHUB_TOKEN can read public repos, so inspecting the SDK
+      # release needs no extra credential. sendlayer-ruby has ZERO tags, so an
+      # empty prev_tag is a supported state, not an error.
+      - name: Resolve the previous tag
+        id: tags
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ steps.profile.outputs.repo }}
+          TAG: ${{ steps.norm.outputs.tag }}
+          OVERRIDE: ${{ inputs.prev_tag }}
+        run: |
+          set -euo pipefail
+          if [ -n "${OVERRIDE:-}" ]; then
+            echo "prev_tag=$OVERRIDE" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          prev=$(gh api "repos/$REPO/tags?per_page=100" --jq '.[].name' \
+                 | grep -vxF "$TAG" | head -n1 || true)
+          echo "prev_tag=$prev" >> "$GITHUB_OUTPUT"
+          [ -n "$prev" ] || echo "::warning::no previous tag in $REPO; the diff will be skipped"
+
+      # Idempotency. THE CONTENT IS THE LEDGER -- no .docs-state.json, which
+      # would be a second source of truth that drifts the moment someone edits
+      # changelog.mdx by hand.
+      - name: Decide whether to proceed
+        id: dedupe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.norm.outputs.branch }}
+          VERSION: ${{ steps.norm.outputs.version }}
+          SDK: ${{ steps.norm.outputs.sdk }}
+          FORCE: ${{ steps.norm.outputs.force }}
+        run: |
+          set -euo pipefail
+          skip=""
+
+          # 1. Already documented? Matches every heading alias, so a legacy
+          #    "Golang SDK" entry still counts and we do not emit a duplicate.
+          if node -e '
+            const { readFileSync } = await import("node:fs");
+            const { sdkOrDie } = await import("./.github/scripts/lib/sdk-registry.mjs");
+            const sdk = sdkOrDie(process.env.SDK);
+            const raw = readFileSync("changelog.mdx", "utf8");
+            const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const hit = sdk.changelogAliases.some((a) => new RegExp(
+              `<Update[^>]*description="v${esc(process.env.VERSION)}"[^>]*>\\s*###\\s+${esc(a)}\\b`).test(raw));
+            process.exit(hit ? 0 : 1);
+          ' --input-type=module; then
+            skip="changelog.mdx already documents $SDK v$VERSION"
+          fi
+
+          # 2. A PR for this exact branch.
+          pr=$(gh pr list --head "$BRANCH" --state all --json number,state,url --jq '.[0] // empty')
+          if [ -n "$pr" ]; then
+            state=$(jq -r .state <<<"$pr"); url=$(jq -r .url <<<"$pr")
+            case "$state" in
+              OPEN) skip="" ;;   # reuse: create-pull-request updates it in place
+              *)    skip="PR $url for this version is already $state" ;;
+            esac
+          fi
+
+          # 3. Human commits on the bot branch. create-pull-request hard-resets
+          #    the branch, so proceeding here would DESTROY review fixes someone
+          #    pushed. Turn silent data loss into a legible skip.
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git fetch --quiet origin "$BRANCH"
+            authors=$(git log --format='%an' "origin/$BRANCH" "^origin/${GITHUB_REF_NAME}" \
+                      2>/dev/null | sort -u | grep -vx 'github-actions\[bot\]' || true)
+            [ -z "$authors" ] || skip="branch $BRANCH carries human commits by: $(echo $authors | tr '\n' ' ')"
+          fi
+
+          if [ -n "$skip" ] && [ "$FORCE" != "true" ]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "skip_reason=$skip" >> "$GITHUB_OUTPUT"
+            { echo "### Skipped"; echo; echo "$skip"; echo;
+              echo 'Re-run this workflow with `force: true` to override.'; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            [ -z "$skip" ] || echo "::warning::forcing past: $skip"
+          fi
+
+  # ---------------------------------------------------------------- #
+  docs:
+    name: Generate, validate, open PR
+    needs: plan
+    if: needs.plan.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Docs repo at the workspace ROOT. Order matters: a root checkout runs
+      # `git clean -ffdx`, so checking the SDK out first would delete it.
+      - name: Check out the docs repo
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          # Falls back to GITHUB_TOKEN so a dry run works before DOCS_PR_TOKEN
+          # exists. The PAT is only strictly required to OPEN the PR, because a
+          # GITHUB_TOKEN-authored PR would not trigger this repo's
+          # pull_request CI (Vale, Spectral, link check).
+          token: ${{ secrets.DOCS_PR_TOKEN || github.token }}
+          fetch-depth: 0
+
+      - name: Check out the SDK at the released tag
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          repository: ${{ needs.plan.outputs.repo }}
+          ref: ${{ needs.plan.outputs.tag }}
+          path: _sdk
+          fetch-depth: 0
+
+      - name: Check out the SDK at the previous tag
+        if: needs.plan.outputs.prev_tag != ''
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          repository: ${{ needs.plan.outputs.repo }}
+          ref: ${{ needs.plan.outputs.prev_tag }}
+          path: _sdk_prev
+          fetch-depth: 0
+
+      - name: Keep helper directories out of git status
+        run: printf '_sdk/\n_sdk_prev/\n' >> .git/info/exclude
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+
+      - name: Install pipeline dependencies
+        working-directory: .github/scripts
+        run: npm ci --no-audit --no-fund
+
+      - name: Install docs linters
+        run: |
+          npm install -g mdx2vast
+          # Vale parses .mdx only with mdx2vast; without it the gate silently
+          # under-reports and the PR's own Vale CI flags what we missed.
+          curl -sfL https://github.com/errata-ai/vale/releases/download/v3.9.1/vale_3.9.1_Linux_64-bit.tar.gz \
+            | tar -xz -C /usr/local/bin vale
+          vale --version
+
+      - name: Gather release context and classify
+        id: ctx
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node .github/scripts/release-context.mjs \
+            --sdk "${{ needs.plan.outputs.sdk }}" \
+            --version "${{ needs.plan.outputs.version }}" \
+            --prev-tag "${{ needs.plan.outputs.prev_tag }}" \
+            --sdk-root "$SDK_DIR" \
+            --out "$RELEASE_DIR" | tee "$RUNNER_TEMP/ctx.log"
+          tier=$(jq -r .tier "$RELEASE_DIR/context.json")
+          echo "tier=$tier" >> "$GITHUB_OUTPUT"
+          echo "### Release context" >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/ctx.log" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Nothing to document
+        if: steps.ctx.outputs.tier == 'abort'
+        run: |
+          echo "::error::classifier returned tier=abort; see the job summary"
+          exit 1
+
+      - name: Render the agent prompt
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const ctx = JSON.parse(readFileSync(`${process.env.RELEASE_DIR}/context.json`, 'utf8'));
+          const { sdkOrDie } = await import('./.github/scripts/lib/sdk-registry.mjs');
+          const sdk = sdkOrDie(ctx.sdk);
+          const map = {
+            SDK_NAME: ctx.sdkName, SDK_REPO: ctx.repo, TAG: ctx.tag,
+            PREV_TAG: ctx.prevTag || '(none)', SEMVER_BUMP: ctx.signals.semverBump,
+            TIER: ctx.tier, TIER_WHY: ctx.tierWhy,
+            SDK_DIR: process.env.SDK_DIR, SDK_PREV_DIR: process.env.SDK_PREV_DIR,
+            RELEASE_DIR: process.env.RELEASE_DIR,
+            SDK_LABEL: sdk.fenceLabels[0], FENCE_LABEL: sdk.fenceLabels[0],
+            TOUCHED_IDENTIFIERS: ctx.signals.touchedIdentifiers.join(', ') || '(none detected)',
+          };
+          let p = readFileSync('.github/prompts/sdk-release.md', 'utf8');
+          for (const [k, v] of Object.entries(map)) p = p.replaceAll(`{{${k}}}`, String(v));
+          writeFileSync(`${process.env.RELEASE_DIR}/PROMPT.md`, p);
+          NODE
+
+      # Judgement pass. Deliberately powerless: no network tool, no VCS write,
+      # and no privileged token. The worst an injected instruction can achieve is
+      # a bad in-scope edit that the gates and a human then catch.
+      - name: Prose and code-sample edits
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ github.token }}   # NOT DOCS_PR_TOKEN
+          prompt_file: ${{ runner.temp }}/release/PROMPT.md
+          claude_args: >-
+            --max-turns 60
+            --add-dir ${{ github.workspace }}/_sdk
+            --add-dir ${{ github.workspace }}/_sdk_prev
+            --add-dir ${{ runner.temp }}/release
+            --allowedTools "Read,Glob,Grep,Edit,Write,TodoWrite,
+              Bash(node .github/scripts/gates/run-all.mjs:*),
+              Bash(node .github/scripts/nav-insert.mjs:*),
+              Bash(node .github/scripts/vocab-add.mjs:*),
+              Bash(node .github/scripts/changelog-entry.mjs --render-only:*),
+              Bash(git diff:*),Bash(git status:*),Bash(git show:*),
+              Bash(git checkout -- :*),Bash(vale:*)"
+            --disallowedTools "WebFetch,WebSearch,Task,NotebookEdit,
+              Bash(git push:*),Bash(git commit:*),Bash(git add:*),Bash(git reset:*),
+              Bash(gh:*),Bash(curl:*),Bash(wget:*),Bash(rm:*),Bash(mv:*),Bash(sed:*)"
+
+      - name: Mechanical pass — render the changelog entry
+        run: |
+          set -euo pipefail
+          if [ ! -f "$RELEASE_DIR/summary.json" ]; then
+            echo "::error::the agent did not write summary.json; no changelog entry can be rendered"
+            exit 1
+          fi
+          node .github/scripts/changelog-entry.mjs \
+            --context "$RELEASE_DIR/context.json" \
+            --summary "$RELEASE_DIR/summary.json"
+
+      - name: Detect whether anything changed
+        id: diff
+        run: |
+          if git diff --quiet && [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: No changes produced
+        if: steps.diff.outputs.changed == 'false'
+        run: |
+          { echo '### No doc changes produced';
+            echo "Neither pass found anything to update for ${{ needs.plan.outputs.sdk }} v${{ needs.plan.outputs.version }}.";
+            echo 'If that is wrong, check `.github/prompts/sdk-release.md`.'; } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      # BLOCKING validation. The docs repo has no branch protection and its Vale
+      # CI runs fail_on_error:false, so nothing downstream can stop a broken
+      # page. This job is the compensating control.
+      - name: Validate (blocking)
+        id: gates
+        run: |
+          set -euo pipefail
+          node .github/scripts/gates/run-all.mjs --stage=final \
+            --context "$RELEASE_DIR/context.json" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the patch and gate report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: docs-${{ needs.plan.outputs.sdk }}-v${{ needs.plan.outputs.version }}
+          path: |
+            ${{ runner.temp }}/release/gate-report.json
+            ${{ runner.temp }}/release/gate-report.md
+            ${{ runner.temp }}/release/context.json
+            ${{ runner.temp }}/release/tasks.md
+            ${{ runner.temp }}/release/summary.json
+            ${{ runner.temp }}/release/UNRESOLVED.md
+          if-no-files-found: ignore
+
+      - name: Dry run — publish the diff instead of a PR
+        if: needs.plan.outputs.dry_run == 'true'
+        run: |
+          git diff > "$RUNNER_TEMP/docs.patch"
+          { echo '### Dry run — no PR opened'; echo;
+            echo '```diff'; head -c 200000 "$RUNNER_TEMP/docs.patch"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dry run — upload the full patch
+        if: needs.plan.outputs.dry_run == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: docs-${{ needs.plan.outputs.sdk }}-v${{ needs.plan.outputs.version }}.patch
+          path: ${{ runner.temp }}/docs.patch
+
+      # Uses a PAT, never GITHUB_TOKEN: a GITHUB_TOKEN-authored PR does not
+      # trigger this repo's pull_request workflows, so Vale, Spectral and the
+      # link checker would all report zero checks and the review gate would
+      # silently evaporate.
+      - name: Require a PAT for a real run
+        if: needs.plan.outputs.dry_run != 'true' && secrets.DOCS_PR_TOKEN == ''
+        run: |
+          echo "::error::DOCS_PR_TOKEN is not set. A dry run works without it, but"
+          echo "::error::opening a PR needs a PAT -- a GITHUB_TOKEN-authored PR gets zero CI."
+          exit 1
+
+      - name: Open the pull request
+        id: cpr
+        if: needs.plan.outputs.dry_run != 'true'
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ secrets.DOCS_PR_TOKEN }}
+          branch: ${{ needs.plan.outputs.branch }}
+          base: ${{ github.ref_name }}
+          add-paths: |
+            changelog.mdx
+            sdks/**
+            guides/**
+            quickstart/**
+            docs.json
+            .github/styles/config/vocabularies/SendLayer/accept.txt
+          commit-message: |
+            docs: ${{ needs.plan.outputs.sdk_name }} ${{ needs.plan.outputs.version }}
+
+            Generated from ${{ needs.plan.outputs.repo }}@${{ needs.plan.outputs.tag }}
+          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          title: Release notes for ${{ needs.plan.outputs.sdk_name }} ${{ needs.plan.outputs.version }}
+          # assignees, NOT reviewers: the PAT owner authors the PR and GitHub
+          # rejects requesting review from the author with a 422 that
+          # create-pull-request only logs as a warning.
+          assignees: gyrationtechs
+          labels: |
+            documentation
+            docs-release
+            automated
+          body: |
+            Automated docs update for [`${{ needs.plan.outputs.repo }}@${{ needs.plan.outputs.tag }}`](https://github.com/${{ needs.plan.outputs.repo }}/releases/tag/${{ needs.plan.outputs.tag }}).
+
+            | | |
+            |---|---|
+            | SDK | `${{ needs.plan.outputs.sdk }}` — ${{ needs.plan.outputs.sdk_name }} |
+            | Version | `${{ needs.plan.outputs.version }}` (previous: `${{ needs.plan.outputs.prev_tag }}`) |
+            | Tier | `${{ steps.ctx.outputs.tier }}` |
+            | Source diff | [`${{ needs.plan.outputs.prev_tag }}...${{ needs.plan.outputs.tag }}`](https://github.com/${{ needs.plan.outputs.repo }}/compare/${{ needs.plan.outputs.prev_tag }}...${{ needs.plan.outputs.tag }}) |
+            | Pipeline run | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} |
+
+            The `<Update>` block in `changelog.mdx` is rendered deterministically from
+            `summary.json` and a gate asserts it byte-matches. Prose and code samples are
+            model-generated and **need a real read**.
+
+            #### Reviewer checklist
+            - [ ] The `<Update>` label date and `description="v…"` are correct
+            - [ ] Every code sample runs against `${{ needs.plan.outputs.version }}`
+            - [ ] No method, parameter or return type is described that does not exist
+            - [ ] `<CodeGroup>` fence order is still JavaScript, Python, PHP, Ruby, Go, cURL
+            - [ ] Breaking changes carry a Before/After migration example
+            - [ ] Nothing leaked into `snippets/**` or `api-reference/**`
+            - [ ] Vale, Spectral and the link checker are green
+
+            <sub>Generated by `.github/workflows/sdk-release-docs.yml`. Do not push to
+            `${{ needs.plan.outputs.branch }}` — a re-run force-pushes it. The pipeline
+            refuses to overwrite a branch carrying human commits unless forced.</sub>
+
+      - name: Summarise
+        if: always()
+        run: |
+          { echo "### ${{ needs.plan.outputs.sdk_name }} v${{ needs.plan.outputs.version }}";
+            echo "- tier: \`${{ steps.ctx.outputs.tier }}\`";
+            echo "- PR: ${{ steps.cpr.outputs.pull-request-url || '(none — dry run or blocked)' }}";
+            echo "- operation: ${{ steps.cpr.outputs.pull-request-operation || 'n/a' }}";
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "$RELEASE_DIR/UNRESOLVED.md" ]; then
+            { echo; echo '### Needs a human decision'; echo;
+              cat "$RELEASE_DIR/UNRESOLVED.md"; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ---------------------------------------------------------------- #
+  notify:
+    name: Report failures
+    needs: [plan, docs]
+    if: always() && (needs.plan.result == 'failure' || needs.docs.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update a failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: >-
+            docs pipeline failed: ${{ needs.plan.outputs.sdk || 'unknown' }}
+            v${{ needs.plan.outputs.version || 'unknown' }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          body="Run: $RUN"$'\n\n'"plan=${{ needs.plan.result }} docs=${{ needs.docs.result }}"
+          n=$(gh issue list --state open --label pipeline-failure \
+                --search "$TITLE in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$n" ]; then
+            gh issue comment "$n" --body "$body"
+          else
+            gh issue create --title "$TITLE" --label pipeline-failure \
+              --assignee gyrationtechs --body "$body"
+          fi

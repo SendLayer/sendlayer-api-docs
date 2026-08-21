@@ -1,0 +1,28 @@
+{
+  "$comment": [
+    "Pre-existing violations the docs pipeline tolerates so its gates do not fail",
+    "on run one. Every entry carries an `expires` date: past that date the gate",
+    "escalates from advisory to blocking, so this debt cannot rot silently.",
+    "Seeded 2026-08-21 by running gates/nav.mjs and gates/link.mjs over main."
+  ],
+  "nav": [
+    {
+      "id": "missing:sdks/go/send-with-gin",
+      "expires": "2026-11-30",
+      "why": "docs.json lists a Gin page that was never written. 'Gin' is already in the Vale vocabulary, which suggests it was planned. Decision needed: write the page or drop the nav entry."
+    },
+    {
+      "id": "orphan:api-reference/schemas",
+      "expires": "2026-11-30",
+      "why": "Starter-template leftover holding Product/Order schemas. Out of the pipeline's scope (api-reference/**); delete or wire into nav."
+    }
+  ],
+  "link": [
+    { "id": "quickstart/installation.mdx:/sdks/nodejs", "expires": "2026-11-30", "why": "Directory href; real page is /sdks/nodejs/introduction." },
+    { "id": "quickstart/installation.mdx:/sdks/python", "expires": "2026-11-30", "why": "Directory href; real page is /sdks/python/introduction." },
+    { "id": "quickstart/installation.mdx:/sdks/php",    "expires": "2026-11-30", "why": "Directory href; real page is /sdks/php/introduction." },
+    { "id": "quickstart/introduction.mdx:/sdks/nodejs", "expires": "2026-11-30", "why": "Card href; real page is /sdks/nodejs/introduction." },
+    { "id": "quickstart/introduction.mdx:/sdks/python", "expires": "2026-11-30", "why": "Card href; real page is /sdks/python/introduction." },
+    { "id": "quickstart/introduction.mdx:/sdks/php",    "expires": "2026-11-30", "why": "Card href; real page is /sdks/php/introduction." }
+  ]
+}
