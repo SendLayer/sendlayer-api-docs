@@ -74,7 +74,7 @@ const sendlayer = new SendLayer('your-api-key');
 
 // Send to multiple recipients
 const response = await sendlayer.Emails.send({
-  from: {email: 'sender@example.com', name: 'Sender Name'}
+  from: {email: 'sender@example.com', name: 'Sender Name'},
   to: [
     { email: 'recipient1@example.com', name: 'Recipient 1' },
     { email: 'recipient2@example.com', name: 'Recipient 2' }
@@ -101,7 +101,7 @@ const sendlayer = new SendLayer('your-api-key');
 
 // Send email with attachments
 const response = await sendlayer.Emails.send({
-  from: {email: 'sender@example.com', name: 'Sender Name'}
+  from: {email: 'sender@example.com', name: 'Sender Name'},
   to: [
     { email: 'recipient1@example.com', name: 'Recipient' }
   ],

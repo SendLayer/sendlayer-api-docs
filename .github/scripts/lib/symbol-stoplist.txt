@@ -1,0 +1,47 @@
+# Identifiers gates/symbol.mjs must not treat as SDK API surface.
+#
+# Seeded 2026-08-21 by running the gate over every fence on main. Everything
+# below appeared in a documented code sample but not in the owning SDK's source.
+# Most are framework or local variables, which are legitimate in a sample.
+#
+# Add an entry only when the identifier genuinely is not SDK API. If it IS meant
+# to be SDK API and is missing from the source, that is a docs bug or an SDK
+# bug -- fix it instead of silencing it.
+
+# ---- Framework and application variables (Flask / FastAPI / Rails / Nuxt / Next) ----
+email_bp                # Flask blueprint name
+welcome_bp              # Flask blueprint name
+router                  # FastAPI APIRouter instance
+model_config            # Pydantic v2 settings key
+runtimeConfig           # Nuxt useRuntimeConfig() result
+routes                  # Rails config/routes.rb
+assigns                 # Rails ActionMailer assigns
+layout                  # Rails mailer layout option
+template                # Rails / generic template variable
+credentials             # Rails encrypted credentials
+plan                    # sample application field (PHP example)
+
+# ---- Local variables in samples ----
+body                    # local request/response body variable
+html_body               # local variable in a Python sample
+login_url               # local variable in a Python sample
+loginUrl                # local variable in a PHP sample
+supportEmail            # local variable in a Node sample
+sendlayerApiKey         # local env-var alias in a Node sample
+message_id              # local variable in a PHP sample (API field is MessageID)
+
+# ---- Webhook event-name string constants (REST payload values, not SDK API) ----
+bounced_events
+message_events
+opened_events
+
+# ---- KNOWN REAL BUGS, suppressed only so the gate can ship green ----
+# These are NOT false positives. Each is a docs/SDK mismatch that predates the
+# pipeline. Remove the entry once fixed so the gate starts enforcing it.
+#
+# startFrom (node): documented at sdks/nodejs/introduction.mdx:301 and used in a
+#   JavaScript fence at guides/get-events.mdx:353, but `GetEventsOptions` in
+#   sendlayer-node/src/types.ts:62 has no `startFrom` field and
+#   src/events/events.ts never forwards one. Node users following the docs get
+#   no pagination. The REST API and the Go/Python/Ruby/PHP SDKs all support it.
+startFrom

@@ -425,8 +425,7 @@
             "From",
             "To",
             "Subject",
-            "ContentType",
-            "HTMLContent"
+            "ContentType"
           ],
           "properties": {
             "From": {
@@ -512,11 +511,22 @@
             },
             "ContentType": {
               "type": "string",
+              "description": "Declared type of the message body. Use `HTML` when an HTMLContent body is present, otherwise `Text`.",
+              "enum": [
+                "HTML",
+                "Text"
+              ],
               "example": "HTML"
             },
             "HTMLContent": {
               "type": "string",
+              "description": "HTML body of the email. Optional, but at least one of HTMLContent or PlainContent must be supplied.",
               "example": "<html><body><p>This is a test email sent with the <a href=\\\"https://sendlayer.com\\\">SendLayer</a> API!</p></body></html>"
+            },
+            "PlainContent": {
+              "type": "string",
+              "description": "Plain-text body of the email. Optional, but at least one of HTMLContent or PlainContent must be supplied. Sending both is recommended for deliverability; ContentType is reported as `HTML` whenever an HTML body is present.",
+              "example": "This is a test email sent with the SendLayer API!"
             },
             "Tags": {
               "type": "array",
