@@ -55,10 +55,12 @@ concurrency:
 permissions:
   contents: read
 
+# NOTE: `runner.temp` is NOT available in workflow-level env -- only `github`,
+# `inputs`, `secrets` and `vars` are. RELEASE_DIR is therefore exported into
+# $GITHUB_ENV by the first step of the `docs` job instead.
 env:
   SDK_DIR: ${{ github.workspace }}/_sdk
   SDK_PREV_DIR: ${{ github.workspace }}/_sdk_prev
-  RELEASE_DIR: ${{ runner.temp }}/release
 
 jobs:
   # ---------------------------------------------------------------- #
@@ -217,6 +219,9 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Export paths
+        run: echo "RELEASE_DIR=$RUNNER_TEMP/release" >> "$GITHUB_ENV"
+
       # Docs repo at the workspace ROOT. Order matters: a root checkout runs
       # `git clean -ffdx`, so checking the SDK out first would delete it.
       - name: Check out the docs repo
@@ -290,6 +295,7 @@ jobs:
           exit 1
 
       - name: Render the agent prompt
+        id: render
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
@@ -310,6 +316,13 @@ jobs:
           for (const [k, v] of Object.entries(map)) p = p.replaceAll(`{{${k}}}`, String(v));
           writeFileSync(`${process.env.RELEASE_DIR}/PROMPT.md`, p);
           NODE
+          # claude-code-action takes `prompt`, not a file path, so the rendered
+          # prompt is carried in a multiline env var.
+          {
+            echo 'AGENT_PROMPT<<AGENT_PROMPT_EOF'
+            cat "$RELEASE_DIR/PROMPT.md"
+            echo 'AGENT_PROMPT_EOF'
+          } >> "$GITHUB_ENV"
 
       # Judgement pass. Deliberately powerless: no network tool, no VCS write,
       # and no privileged token. The worst an injected instruction can achieve is
@@ -319,7 +332,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ github.token }}   # NOT DOCS_PR_TOKEN
-          prompt_file: ${{ runner.temp }}/release/PROMPT.md
+          prompt: ${{ env.AGENT_PROMPT }}
           claude_args: >-
             --max-turns 60
             --add-dir ${{ github.workspace }}/_sdk
@@ -407,12 +420,18 @@ jobs:
       # trigger this repo's pull_request workflows, so Vale, Spectral and the
       # link checker would all report zero checks and the review gate would
       # silently evaporate.
+      # The `secrets` context is unavailable in a step-level `if:`, so the check
+      # happens in the shell with the secret mapped through env.
       - name: Require a PAT for a real run
-        if: needs.plan.outputs.dry_run != 'true' && secrets.DOCS_PR_TOKEN == ''
+        if: needs.plan.outputs.dry_run != 'true'
+        env:
+          PR_TOKEN: ${{ secrets.DOCS_PR_TOKEN }}
         run: |
-          echo "::error::DOCS_PR_TOKEN is not set. A dry run works without it, but"
-          echo "::error::opening a PR needs a PAT -- a GITHUB_TOKEN-authored PR gets zero CI."
-          exit 1
+          if [ -z "${PR_TOKEN:-}" ]; then
+            echo "::error::DOCS_PR_TOKEN is not set. A dry run works without it, but"
+            echo "::error::opening a PR needs a PAT -- a GITHUB_TOKEN-authored PR gets zero CI."
+            exit 1
+          fi
 
       - name: Open the pull request
         id: cpr
