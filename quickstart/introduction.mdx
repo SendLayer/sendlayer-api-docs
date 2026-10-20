@@ -79,12 +79,12 @@ use SendLayer\SendLayer;
 $sendlayer = new SendLayer('your-api-key');
 
 // Send an email
-$response = $sendlayer->Emails->send([
-  'from' => 'sender@example.com',
-  'to' => 'recipient@example.com',
-  'subject' => 'Test Email',
-  'text' => 'This is a test email'
-]);
+$response = $sendlayer->Emails->send(
+  from: 'sender@example.com',
+  to: 'recipient@example.com',
+  subject: 'Test Email',
+  text: 'This is a test email'
+);
 ?>
 ```
 

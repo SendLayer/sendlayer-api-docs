@@ -57,14 +57,12 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$params = [
-  'from' => 'sender@example.com',
-  'to' => ['recipient1@example.com', 'recipient2@example.com', 'recipient3@example.com'],
-  'subject' => 'Newsletter Update',
-  'html' => '<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer\'s PHP SDK</p></body></html>',
-];
-
-$response = $sendlayer->Emails->send($params);
+$response = $sendlayer->Emails->send(
+  from: 'sender@example.com',
+  to: ['recipient1@example.com', 'recipient2@example.com', 'recipient3@example.com'],
+  subject: 'Newsletter Update',
+  html: '<html><body><h1>Newsletter Update</h1><p>This is a newsletter sent to multiple recipients using SendLayer\'s PHP SDK</p></body></html>',
+);
 ```
 
 ```ruby Ruby

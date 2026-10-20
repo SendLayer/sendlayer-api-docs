@@ -72,17 +72,15 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$params = [
-  'from' => ['email' => 'sender@example.com', 'name' => 'Sender Name'],
-  'to' => 'recipient@example.com',
-  'subject' => 'Document Attachment',
-  'html' => '<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>',
-  'attachments' => [
+$response = $sendlayer->Emails->send(
+  from: ['email' => 'sender@example.com', 'name' => 'Sender Name'],
+  to: 'recipient@example.com',
+  subject: 'Document Attachment',
+  html: '<html><body><h1>Please find the attached document</h1><p>I have attached the requested PDF file for your review.</p></body></html>',
+  attachments: [
     [ 'path' => './path/to/document.pdf', 'type' => 'application/pdf' ]
   ]
-];
-
-$response = $sendlayer->Emails->send($params);
+);
 ```
 
 ```ruby Ruby

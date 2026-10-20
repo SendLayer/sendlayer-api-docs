@@ -55,14 +55,12 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$params = [
-  'from' => 'sender@example.com',
-  'to' => 'recipient@example.com', // or array of recipients
-  'subject' => 'Test Email',
-  'text' => "This is a test email sent using SendLayer's PHP SDK",
-];
-
-$response = $sendlayer->Emails->send($params);
+$response = $sendlayer->Emails->send(
+  from: 'sender@example.com',
+  to: 'recipient@example.com', // or array of recipients
+  subject: 'Test Email',
+  text: "This is a test email sent using SendLayer's PHP SDK",
+);
 ```
 
 ```ruby Ruby
