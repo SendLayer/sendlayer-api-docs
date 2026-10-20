@@ -150,10 +150,10 @@ use SendLayer\SendLayer;
 $sendlayer = new SendLayer('your-api-key');
 
 // Filter events for the last 24 hours
-$events = $sendlayer->Events->get([
-  'startDate' => time() - 24 * 60 * 60,
-  'endDate' => time()
-]);
+$events = $sendlayer->Events->get(
+  startDate: new DateTime('-24 hours'),
+  endDate: new DateTime('now')
+);
 ```
 
 ```ruby Ruby
@@ -227,13 +227,9 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$openedEvents = $sendlayer->Events->get([
-  'event' => 'opened'
-]);
+$openedEvents = $sendlayer->Events->get(event: 'opened');
 
-$bouncedEvents = $sendlayer->Events->get([
-  'event' => 'bounced'
-]);
+$failedEvents = $sendlayer->Events->get(event: 'failed');
 ```
 
 ```ruby Ruby
@@ -312,9 +308,7 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$messageEvents = $sendlayer->Events->get([
-  'messageId' => '06e4491f-fc5a-49cb-bc57-xxxxxx'
-]);
+$messageEvents = $sendlayer->Events->get(messageId: '06e4491f-fc5a-49cb-bc57-xxxxxx');
 ```
 
 ```ruby Ruby
@@ -375,10 +369,10 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$events = $sendlayer->Events->get([
-  'startFrom' => 10,
-  'retrieveCount' => 20
-]);
+$events = $sendlayer->Events->get(
+  startFrom: 10,
+  retrieveCount: 20
+);
 ```
 
 ```ruby Ruby
@@ -455,12 +449,12 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$events = $sendlayer->Events->get([
-  'startDate' => time() - 7 * 24 * 60 * 60,
-  'endDate' => time(),
-  'event' => 'opened',
-  'retrieveCount' => 50
-]);
+$events = $sendlayer->Events->get(
+  startDate: new DateTime('-7 days'),
+  endDate: new DateTime('now'),
+  event: 'opened',
+  retrieveCount: 50
+);
 ```
 
 ```ruby Ruby

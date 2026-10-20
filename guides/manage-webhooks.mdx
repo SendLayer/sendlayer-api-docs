@@ -59,12 +59,10 @@ use SendLayer\SendLayer;
 
 $sendlayer = new SendLayer('your-api-key');
 
-$params = [
-  'url' => 'https://your-domain.com/webhook',
-  'event' => 'open'
-];
-
-$response = $sendlayer->Webhooks->create($params);
+$response = $sendlayer->Webhooks->create(
+  url: 'https://your-domain.com/webhook',
+  event: 'open'
+);
 ```
 
 ```ruby Ruby

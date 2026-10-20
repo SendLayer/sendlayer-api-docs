@@ -103,15 +103,15 @@ class ContactController extends Controller
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        $response = $this->sendlayer->Emails->send([
-            'from' => config('sendlayer.from'),
-            'to' => [['email' => 'support@example.com', 'name' => 'Support Team']],
-            'replyTo' => [['email' => $validated['email'], 'name' => $validated['name']]],
-            'subject' => "New message from {$validated['name']}",
-            'text' => $validated['message'],
-        ]);
+        $response = $this->sendlayer->Emails->send(
+            from: config('sendlayer.from'),
+            to: [['email' => 'support@example.com', 'name' => 'Support Team']],
+            replyTo: [['email' => $validated['email'], 'name' => $validated['name']]],
+            subject: "New message from {$validated['name']}",
+            text: $validated['message'],
+        );
 
-        return response()->json(['message_id' => $response]);
+        return response()->json(['message_id' => $response['MessageID']]);
     }
 }
 ```
@@ -168,14 +168,14 @@ class SendWelcomeEmail implements ShouldQueue
             'loginUrl' => route('login'),
         ])->render();
 
-        $sendlayer->Emails->send([
-            'from' => config('sendlayer.from'),
-            'to' => [['email' => $this->user->email, 'name' => $this->user->name]],
-            'subject' => "Welcome, {$this->user->name}",
-            'html' => $html,
-            'text' => "Welcome, {$this->user->name}. Sign in at " . route('login'),
-            'tags' => ['welcome-email'],
-        ]);
+        $sendlayer->Emails->send(
+            from: config('sendlayer.from'),
+            to: [['email' => $this->user->email, 'name' => $this->user->name]],
+            subject: "Welcome, {$this->user->name}",
+            html: $html,
+            text: "Welcome, {$this->user->name}. Sign in at " . route('login'),
+            tags: ['welcome-email'],
+        );
     }
 }
 ```

@@ -57,8 +57,7 @@
               {
                 "group": "Go",
                 "pages": [
-                  "sdks/go/send-with-go",
-                  "sdks/go/send-with-gin"
+                  "sdks/go/send-with-go"
                 ]
               }
             ]

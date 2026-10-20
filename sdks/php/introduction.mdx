@@ -10,6 +10,7 @@ Before getting started, you'll need to:
 1. Authorize your [sending domain](https://sendlayer.com/docs/authorizing-your-domain/)
 2. Create and retrieve your [SendLayer API key](https://sendlayer.com/docs/managing-api-keys/)
 
+<Note>The code examples on this page use named arguments, which require PHP 8.0 or later. On PHP 7.4, pass the arguments in the order the method defines them instead.</Note>
 
 ## Installation
 Install the SendLayer PHP SDK using Composer:
@@ -34,12 +35,12 @@ use SendLayer\SendLayer;
 $sendlayer = new SendLayer('your-api-key');
 
 // Send an email
-$response = $sendlayer->Emails->send([
-    'from' => 'sender@example.com',
-    'to' => 'recipient@example.com',
-    'subject' => 'Test Email',
-    'text' => 'This is a test email'
-]);
+$response = $sendlayer->Emails->send(
+    from: 'sender@example.com',
+    to: 'recipient@example.com',
+    subject: 'Test Email',
+    text: 'This is a test email'
+);
 
 ```
 
@@ -47,12 +48,12 @@ $response = $sendlayer->Emails->send([
 To send HTML emails, include the `html` parameter when calling `send()`.
 
 ```php SendEmail.php
-$response = $sendlayer->Emails->send([
-    'from' => 'sender@example.com',
-    'to' => 'recipient@example.com',
-    'subject' => 'Test Email',
-    'html' => "<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>"
-]);
+$response = $sendlayer->Emails->send(
+    from: 'sender@example.com',
+    to: 'recipient@example.com',
+    subject: 'Test Email',
+    html: "<html><body><p>This is a test email sent with the <a href='https://sendlayer.com'>SendLayer</a> API!</p></body></html>"
+);
 ```
 <Note>You can include the `text` parameter to provide both plain text and HTML versions of your email.</Note>
 
@@ -60,34 +61,34 @@ $response = $sendlayer->Emails->send([
 You can send emails to multiple recipients and include CC/BCC addresses.
 
 ```php SendEmail.php
-$response = $sendlayer->Emails->send([
-    'from' => ['email' => 'sender@example.com', 'name' => 'Sender Name'],
-    'to' => [
+$response = $sendlayer->Emails->send(
+    from: ['email' => 'sender@example.com', 'name' => 'Sender Name'],
+    to: [
         ['email' => 'recipient1@example.com', 'name' => 'Recipient 1'],
         ['email' => 'recipient2@example.com', 'name' => 'Recipient 2']
     ],
-    'subject' => 'Complex Email',
-    'html' => '<p>This is a <strong>test email</strong>!</p>',
-    'text' => 'This is a test email!',
-    'cc' => [['email' => 'cc@example.com', 'name' => 'CC Recipient']],
-    'bcc' => [['email' => 'bcc@example.com', 'name' => 'BCC Recipient']],
-    'replyTo' => [['email' => 'reply@example.com', 'name' => 'Reply To']]
-]);
+    subject: 'Complex Email',
+    html: '<p>This is a <strong>test email</strong>!</p>',
+    text: 'This is a test email!',
+    cc: [['email' => 'cc@example.com', 'name' => 'CC Recipient']],
+    bcc: [['email' => 'bcc@example.com', 'name' => 'BCC Recipient']],
+    replyTo: [['email' => 'reply@example.com', 'name' => 'Reply To']]
+);
 ```
 Each recipient field is an array of objects containing the recipient's `name` and `email`.
 
 <Note>There are limits to the number of recipients you can add to a single request. See our [rate limiting](/api-reference/rate-limit) guide to learn more.</Note>
 
 #### Including Attachments
-You can add attachments by including the `attachments` parameter in the payload.
+You can add attachments by including the `attachments` parameter when calling `send()`.
 
 ```php SendEmail.php
-$response = $sendlayer->Emails->send([
-    'from' => ['email' => 'sender@example.com', 'name' => 'Sender Name'],
-    'to' => [ ['email' => 'recipient1@example.com', 'name' => 'Recipient'] ],
-    'subject' => 'Document attached',
-    'html' => '<p>See attached file.</p>',
-    'attachments' => [
+$response = $sendlayer->Emails->send(
+    from: ['email' => 'sender@example.com', 'name' => 'Sender Name'],
+    to: [ ['email' => 'recipient1@example.com', 'name' => 'Recipient'] ],
+    subject: 'Document attached',
+    html: '<p>See attached file.</p>',
+    attachments: [
         [
             'path' => '/path/to/document.pdf',
             'type' => 'application/pdf'
@@ -97,7 +98,7 @@ $response = $sendlayer->Emails->send([
             'type' => 'image/jpeg'
         ]
     ]
-]);
+);
 ```
 <Warning>The maximum email size allowed is 10MB. This includes the message and all attachments.</Warning>
 
@@ -133,10 +134,10 @@ use SendLayer\SendLayer;
 $sendlayer = new SendLayer('your-api-key');
 
 // Create a webhook
-$webhook = $sendlayer->Webhooks->create([
-    'url' => 'https://your-domain.com/webhook',
-    'event' => 'open'
-]);
+$webhook = $sendlayer->Webhooks->create(
+    url: 'https://your-domain.com/webhook',
+    event: 'open'
+);
 ```
 The `event` parameter accepts the following options:
 - bounce
@@ -251,11 +252,11 @@ You can filter events by date range, event type, message ID, and pagination opti
 
 ```php Events.php
 // Filter events for the last 4 hours
-$events = $sendlayer->Events->get([
-    'startDate' => new DateTime('-4 hours'),
-    'endDate' => new DateTime('now'),
-    'event' => 'opened'
-]);
+$events = $sendlayer->Events->get(
+    startDate: new DateTime('-4 hours'),
+    endDate: new DateTime('now'),
+    event: 'opened'
+);
 ```
 
 #### Events Parameters
@@ -263,8 +264,8 @@ The table below lists available parameters in the `Events` module.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `startDate` | `DateTime` or `int` | No | Start date for filtering events (Unix timestamp or DateTime) |
-| `endDate` | `DateTime` or `int` | No | End date for filtering events (Unix timestamp or DateTime) |
+| `startDate` | `DateTime` | No | Start date for filtering events |
+| `endDate` | `DateTime` | No | End date for filtering events. Must be after `startDate` |
 | `event` | `string` | No | Filter by event type. Supported: `accepted`, `rejected`, `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, `failed` |
 | `messageId` | `string` | No | Filter by the email `MessageId` |
 | `startFrom` | `integer` | No | Starting position for pagination |
@@ -281,7 +282,12 @@ use SendLayer\Exceptions\SendLayerAPIException;
 use SendLayer\Exceptions\SendLayerException;
 
 try {
-    $response = $sendlayer->Emails->send([ /* ... */ ]);
+    $response = $sendlayer->Emails->send(
+        from: 'sender@example.com',
+        to: 'recipient@example.com',
+        subject: 'Test Email',
+        text: 'This is a test email'
+    );
 } catch (SendLayerAPIException $e) {
     // API-specific error with status code and response data
     echo 'API error: ' . $e->getStatusCode() . ' - ' . $e->getMessage();
