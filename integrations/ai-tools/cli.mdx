@@ -1,0 +1,328 @@
+---
+title: 'SendLayer CLI'
+sidebarTitle: 'CLI'
+description: 'Install the SendLayer CLI to send email, query events, and manage webhooks from your terminal, scripts, CI pipelines, and AI coding agents.'
+icon: 'terminal'
+---
+
+## Prerequisites
+
+- A SendLayer account and API key ([get your API key](https://sendlayer.com/docs/managing-api-keys/))
+- A verified sending domain ([authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/))
+- Node.js 18 or newer, if you install with npm
+
+## Installation
+
+<Tabs>
+<Tab title="npm">
+  Install the CLI globally from npm:
+
+  ```bash
+  npm install -g sendlayer-cli
+  ```
+
+  <Warning>
+  The package name is `sendlayer-cli`. The `sendlayer` package on npm is the Node.js SDK, which doesn't include the CLI.
+  </Warning>
+</Tab>
+
+<Tab title="Standalone binary">
+  Download a standalone binary from the [latest GitHub release](https://github.com/SendLayer/sendlayer-cli/releases/latest). It doesn't require Node.js.
+
+  | OS      | Architecture |
+  |---------|--------------|
+  | Linux   | x64, arm64   |
+  | macOS   | x64, arm64   |
+  | Windows | x64          |
+
+  Rename the binary to `sendlayer` (`sendlayer.exe` on Windows) and move it to a folder on your `PATH`.
+</Tab>
+</Tabs>
+
+Confirm the installation by checking the version:
+
+```bash
+sendlayer --version
+```
+
+## Authentication
+
+Run `sendlayer login` and paste your API key when prompted. The CLI checks the key against the SendLayer API before saving it.
+
+```bash
+sendlayer login
+```
+
+In CI and other non-interactive environments, set the `SENDLAYER_API_KEY` environment variable instead. Every command reads it.
+
+```bash
+export SENDLAYER_API_KEY="your-api-key"
+```
+
+The CLI looks for an API key in this order:
+
+1. The `--api-key` flag
+2. The `SENDLAYER_API_KEY` environment variable
+3. Credentials saved by `sendlayer login`
+
+<Warning>
+Avoid passing your key with `--api-key` or `login --key` on a shared machine. A key on the command line is visible in your shell history and to other users through `ps`.
+</Warning>
+
+To see which key is active and where it came from, run `whoami`. The CLI always masks the key:
+
+```bash
+sendlayer whoami
+```
+
+### Profiles
+
+Save keys for several accounts or environments under named profiles. Then pass `--profile` to any command to use that key:
+
+```bash
+sendlayer login --profile staging
+sendlayer whoami --profile staging
+```
+
+The first profile you save becomes the default. Any command run without `--profile` uses the default profile. If you log out of the default profile, the CLI promotes another saved profile and tells you which one.
+
+```bash
+sendlayer logout --profile staging
+```
+
+The CLI stores credentials with file mode `0600` at:
+
+- **macOS and Linux**: `~/.config/sendlayer/credentials.json` (or `$XDG_CONFIG_HOME/sendlayer/credentials.json`)
+- **Windows**: `%APPDATA%\sendlayer\credentials.json`
+
+## Send an email
+
+Pass the sender, recipients, subject, and body as flags:
+
+```bash
+sendlayer emails send \
+  --from "Paulie Paloma <paulie@example.com>" \
+  --to user@example.com \
+  --subject "Welcome to Acme" \
+  --text "Thanks for signing up."
+```
+
+When SendLayer accepts the email, the CLI prints its message ID:
+
+```text
+✓ Email queued. MessageID: 8912e59e-ec88-bcd6-45dd-0012fe223ab6
+```
+
+The `--from` address must use a domain you've authorized in SendLayer. Use a plain email address, or `Name <email>` to set a display name.
+
+### HTML and plain text
+
+Pass the body inline with `--html` and `--text`, or read it from a file with `--html-file` and `--text-file`. When you send both, email clients that don't render HTML show the plain-text version.
+
+```bash
+sendlayer emails send \
+  --from paulie@example.com \
+  --to user@example.com \
+  --subject "Your receipt" \
+  --html-file ./receipt.html \
+  --text-file ./receipt.txt
+```
+
+### Recipients, attachments, and headers
+
+```bash
+sendlayer emails send \
+  --from paulie@example.com \
+  --to alice@example.com,bob@example.com \
+  --cc billing@example.com \
+  --reply-to support@example.com \
+  --subject "Invoice #1042" \
+  --html-file ./invoice.html \
+  --attachment ./invoice.pdf:application/pdf \
+  --header X-Invoice-Id=1042 \
+  --tag billing
+```
+
+- `--to`, `--cc`, `--bcc`, and `--reply-to` take a comma-separated list. Pass each of these flags once.
+- Repeat `--attachment`, `--header`, and `--tag` to add more than one.
+- `--attachment` takes `path[:mime[:disposition[:filename]]]`. If you leave out the MIME type, the CLI guesses it from the file extension. The disposition is `attachment` (the default) or `inline`.
+- `--header` takes `Key=Value`.
+
+### Send from a JSON file
+
+For complex emails, put the full payload in a JSON file and pass it with `--file`. The file uses the same fields as the [Node.js SDK](/sdks/nodejs/introduction).
+
+```json email.json
+{
+  "from": { "email": "paulie@example.com", "name": "Paulie Paloma" },
+  "to": [{ "email": "user@example.com", "name": "Pat Doe" }],
+  "subject": "Welcome to Acme",
+  "html": "<h1>Welcome!</h1><p>Thanks for signing up.</p>",
+  "text": "Welcome! Thanks for signing up.",
+  "tags": ["onboarding"]
+}
+```
+
+```bash
+sendlayer emails send --file ./email.json
+```
+
+## Query events
+
+List delivery and engagement events, with optional filters:
+
+```bash
+# Recent events
+sendlayer events list
+
+# Delivered messages only, up to 50 records
+sendlayer events list --event delivered --limit 50
+
+# A date range in ISO 8601 format
+sendlayer events list --start 2026-05-01 --end 2026-05-09
+
+# Every event for one message
+sendlayer events list --message-id 8912e59e-ec88-bcd6-45dd-0012fe223ab6
+```
+
+| Flag | Description |
+|------|-------------|
+| `--event` | One of `accepted`, `rejected`, `delivered`, `opened`, `clicked`, `unsubscribed`, `complained`, or `failed` |
+| `--start`, `--end` | Start and end of the date range in ISO 8601 format |
+| `--message-id` | Only events for this message |
+| `--limit` | Maximum records to return, from 1 to 100 |
+
+## Manage webhooks
+
+```bash
+# List your webhooks
+sendlayer webhooks list
+
+# Send bounce events to an HTTPS endpoint
+sendlayer webhooks create --url https://example.com/webhooks/sendlayer --event bounce
+
+# Delete a webhook by ID
+sendlayer webhooks delete 42
+```
+
+Webhook event types are `bounce`, `click`, `open`, `unsubscribe`, `complaint`, and `delivery`. For the payload each one sends, see [Managing Webhooks](/guides/manage-webhooks).
+
+### Test webhooks locally
+
+`webhooks listen` receives webhook events on your machine while you develop. It needs a public HTTPS URL that tunnels to a local port, such as one from [ngrok](https://ngrok.com).
+
+<Steps>
+<Step title="Start a tunnel">
+  Expose a local port. The CLI listens on port `4000` by default. Use `--port` to change it.
+
+  ```bash
+  ngrok http 4000
+  ```
+</Step>
+
+<Step title="Start the listener">
+  In another terminal, pass the tunnel URL. Add `--forward-to` to send each event on to your local app.
+
+  ```bash
+  sendlayer webhooks listen \
+    --public-url https://abc123.ngrok.app \
+    --forward-to http://localhost:3000/webhooks/sendlayer
+  ```
+
+  The CLI creates one webhook per event type and prints each event as it arrives. To listen for specific types only, add `--events bounce,click`.
+</Step>
+
+<Step title="Stop the listener">
+  Press `Ctrl+C`. The CLI deletes every webhook it created. If a previous run crashed, the next run offers to clean up the leftover webhooks.
+</Step>
+</Steps>
+
+## Use the CLI with AI agents and scripts
+
+In a terminal, the CLI prints readable output. When its output goes to a pipe, a CI job, or an AI coding agent such as Claude Code, Cursor, or Codex, it switches to JSON automatically. Add `--json` to any command to force JSON output.
+
+JSON output works with tools like `jq`. This command lists the recipients of failed emails:
+
+```bash
+sendlayer events list --event failed --json | jq -r '.Events[].Message.Headers.To[]'
+```
+
+In JSON mode, the CLI writes errors to stderr in this format:
+
+```json
+{
+  "error": "Invalid SenderAPIKey",
+  "code": "API_ERROR",
+  "details": {
+    "statusCode": 401,
+    "response": {
+      "Errors": [{ "Code": 13, "Message": "Invalid SenderAPIKey" }]
+    }
+  }
+}
+```
+
+For the codes inside `details.response.Errors`, see [Error Codes](/api-reference/error-codes).
+
+### Exit codes
+
+Scripts and agents branch on the exit code without parsing the error message:
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | Unclassified error, including input the CLI checks itself, such as a missing `--from` |
+| `2` | Missing required flag, unknown flag, or invalid flag value |
+| `3` | No API key found |
+| `4` | API key rejected (HTTP 401 or 403) |
+| `5` | Validation failed, in the SDK or at the API (HTTP 400 or 422) |
+| `6` | Other API error, such as HTTP 404, 429, or 5xx |
+| `7` | Network error or timeout, with no response from the API |
+| `130` | Interrupted with `Ctrl+C` |
+
+### GitHub Actions example
+
+Store your API key as a repository secret named `SENDLAYER_API_KEY`. Then install and run the CLI in a workflow step:
+
+```yaml .github/workflows/release.yml
+- name: Email the release notes
+  env:
+    SENDLAYER_API_KEY: ${{ secrets.SENDLAYER_API_KEY }}
+    VERSION: ${{ github.ref_name }}
+  run: |
+    npm install -g sendlayer-cli@0.1.0
+    sendlayer emails send \
+      --from releases@example.com \
+      --to team@example.com \
+      --subject "Released $VERSION" \
+      --text "A new version is live."
+```
+
+<Tip>
+Pin the CLI version in CI so a new release doesn't change your pipeline's behavior unexpectedly.
+</Tip>
+
+## Get help
+
+Add `--help` to any command to see its flags and examples:
+
+```bash
+sendlayer --help
+sendlayer emails send --help
+```
+
+Report bugs or request features in the [SendLayer CLI GitHub repository](https://github.com/SendLayer/sendlayer-cli/issues).
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="What's the difference between the CLI and the MCP server?">
+    Both give AI tools access to SendLayer. The [MCP server](/integrations/ai-tools/mcp-server) adds SendLayer tools to any app that supports MCP, including chat apps such as Claude Desktop. The CLI runs as a shell command, so it also works in scripts, cron jobs, and CI pipelines.
+  </Accordion>
+  <Accordion title="Why does the CLI print JSON instead of text?">
+    The CLI switches to JSON when its output isn't a terminal, such as when you pipe it to another command. Run the command directly in a terminal to see readable output.
+  </Accordion>
+  <Accordion title="How do I switch between SendLayer accounts?">
+    Save each account's key under its own profile with `sendlayer login --profile <name>`. Then pass `--profile <name>` to any command. Run `sendlayer whoami` to check which profile is active.
+  </Accordion>
+</AccordionGroup>

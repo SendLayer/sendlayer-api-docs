@@ -88,9 +88,10 @@
             ]
           },
           {
-            "group": "Integrations",
+            "group": "Build with AI",
             "pages": [
-              "integrations/ai-tools/mcp-server"
+              "integrations/ai-tools/mcp-server",
+              "integrations/ai-tools/cli"
             ]
           },
           {
