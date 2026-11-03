@@ -51,7 +51,7 @@ claude mcp add --scope user --transport http sendlayer https://mcp.sendlayer.com
 
 ### Disconnect
 
-Disconnect in the assistant's connector settings, or in your SendLayer account under **Account**, **Connected apps**. Changing your password or two-factor settings also ends every connection. A connection unused for 45 days ends on its own.
+Disconnect in the assistant's connector settings, or in your SendLayer account under **Account**, **Connected Apps**. A connection unused for 30 days ends on its own.
 
 ## Connect with an API key
 
@@ -69,7 +69,11 @@ This opens the MCP server installation page in Cursor. Enter your SendLayer API 
 
 #### Manual installation
 
-Open the command palette (`cmd`+`shift`+`p` on macOS or `ctrl`+`shift`+`p` on Windows), choose **Cursor Settings**, select **Tools & MCP** and click **New MCP server**. In the `mcp.json` file, add:
+Open the command palette (`cmd`+`shift`+`p` on macOS or `ctrl`+`shift`+`p` on Windows), choose **Cursor Settings**, select **Tools & MCP** and click **New MCP server**.
+
+![Cursor MCP Server Manual Installation](/images/mcp-server/cursor-setup.png)
+
+In the `mcp.json` file, add:
 
    ```json
    {
