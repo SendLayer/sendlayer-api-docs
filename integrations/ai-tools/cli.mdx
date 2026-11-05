@@ -241,11 +241,13 @@ Webhook event types are `bounce`, `click`, `open`, `unsubscribe`, `complaint`, a
 
 In a terminal, the CLI prints readable output. When its output goes to a pipe, a CI job, or an AI coding agent such as Claude Code, Cursor, or Codex, it switches to JSON automatically. Add `--json` to any command to force JSON output.
 
-JSON output works with tools like `jq`. This command lists the recipients of failed emails:
+JSON output works with tools like `jq`. This command lists the email addresses of failed emails' recipients:
 
 ```bash
-sendlayer events list --event failed --json | jq -r '.Events[].Message.Headers.To[]'
+sendlayer events list --event failed --json | jq -r '.Events[].Message.Headers.To[][1]'
 ```
+
+Each recipient in `Headers.To` is a `[name, email]` pair, so `[1]` selects the email address.
 
 In JSON mode, the CLI writes errors to stderr in this format:
 
