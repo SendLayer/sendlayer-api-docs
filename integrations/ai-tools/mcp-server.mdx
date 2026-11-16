@@ -1,32 +1,61 @@
 ---
 title: 'SendLayer MCP Server'
 sidebarTitle: 'MCP'
-description: 'Learn how to use the SendLayer MCP server to send email and manage webhooks/events directly from AI tools like Cursor and Claude.'
+description: 'Connect SendLayer to Claude, ChatGPT, Grok, Cursor and other AI tools to send email, check delivery and manage webhooks from a conversation.'
 icon: 'robot'
 ---
 
 ## Overview
-The SendLayer MCP server exposes tools for sending email and managing webhooks/events using the SendLayer Node.js SDK. You can use it from AI tools like Cursor and Claude to run local scripts, chat with an AI model, and send results to yourself or your team without wiring up HTTP calls manually.
+The hosted SendLayer MCP server at `https://mcp.sendlayer.com` lets an AI assistant send email from your verified sender domains, look up what happened to an email, summarize the week's failures and manage webhooks. It runs as your SendLayer account and stores nothing of its own.
+
+There are two ways to connect:
+
+- **Sign in with SendLayer.** Assistants that can sign in to remote MCP servers (Claude, ChatGPT, Grok, Claude Code and others) use your SendLayer login. No API key. You choose which sender domains and permissions the assistant gets.
+- **API key.** Editors and CLIs that pass headers (Cursor, Gemini CLI, Windsurf) use an API key, which belongs to one sender domain.
 
 ## What is MCP?
-MCP (Model Context Protocol) is a protocol that allows AI tools to interact with external services and data sources. It's a way to extend the capabilities of AI tools by allowing them to use external tools and data sources.
-
-## Tools
-
-- **send-email**: Send a message (plain text or HTML) with CC/BCC, reply-to, tags, headers, and attachments.
-- **get-events**: Query events with optional filters.
-- **list-webhooks**: List registered webhooks.
-- **create-webhook**: Create a webhook.
-- **delete-webhook**: Delete a webhook by ID.
+MCP (Model Context Protocol) is an open protocol that lets AI tools call external services. The SendLayer MCP server exposes SendLayer as a set of tools the assistant can use during a conversation.
 
 ## Prerequisites
-- A SendLayer account and API key ([get your API key](https://app.sendlayer.com/))
-- A verified sending domain ([authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/))
-- Cursor or Claude Desktop installed
+- A SendLayer account with a verified sending domain ([authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/))
+- For the API key method, an API key for that domain ([managing API keys](https://sendlayer.com/docs/managing-api-keys/))
 
-## Connecting to the MCP server
+## Sign in with SendLayer
 
-The easiest way to get started is to connect to the hosted SendLayer MCP server. No local installation is required.
+1. Add a connector with the URL `https://mcp.sendlayer.com` in your assistant (steps per assistant below).
+2. The assistant opens the SendLayer sign-in page. Log in.
+3. Choose what the assistant may use: which sender domains, and which permissions. **Send email** and **read delivery events** are on; **manage webhooks** is off unless you turn it on.
+4. Approve. You are back in the assistant and the SendLayer tools are available.
+
+The assistant can only use the domains and permissions you chose. To add a domain later, connect again and allow it. Every action runs as your account.
+
+### Claude
+
+Open **Settings**, **Connectors**, **Add custom connector**. Name it SendLayer, enter `https://mcp.sendlayer.com` as the URL and save. Claude asks you to connect; sign in and approve. The connector then works on claude.ai, in Claude Desktop and on mobile.
+
+### ChatGPT
+
+Open **Plugins** in the sidebar, click **Add**, then **Add custom MCP server**. Name it SendLayer, enter `https://mcp.sendlayer.com` as the URL, choose **OAuth** as the authentication and confirm. Sign in and approve. Enable the SendLayer plugin in a chat to use it.
+
+### Grok
+
+Open **Connectors** on grok.com, click **New Connector**, choose **Custom** and enter `https://mcp.sendlayer.com` as the server URL. Sign in and approve when Grok opens the SendLayer page.
+
+### Claude Code
+
+Run the following command, then open `/mcp`, choose `sendlayer` and click **Authenticate**:
+
+```bash
+claude mcp add --scope user --transport http sendlayer https://mcp.sendlayer.com
+```
+
+### Disconnect
+
+Disconnect in the assistant's connector settings, or in your SendLayer account under **Account**, **Connected Apps**. A connection unused for 30 days ends on its own.
+
+## Connect with an API key
+
+Clients that cannot sign in pass the API key as a header. The key belongs to one sender domain, so the tools work with that domain and take no `domain` argument. Get the key from [app.sendlayer.com](https://app.sendlayer.com/).
 
 ### Cursor
 
@@ -34,19 +63,17 @@ Use the direct link below to install the MCP server in Cursor:
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=sendlayer&config=eyJ0eXBlIjoidXJsIiwidXJsIjoiaHR0cHM6Ly9tY3Auc2VuZGxheWVyLmNvbSIsImhlYWRlcnMiOnsieC1zZW5kbGF5ZXItYXBpLWtleSI6IllPVVJfU0VORExBWUVSX0FQSV9LRVkifX0%3D)
 
-This will open the MCP server installation page in Cursor. Enter your SendLayer API key and click **Install**.
+This opens the MCP server installation page in Cursor. Enter your SendLayer API key and click **Install**.
 
 ![Cursor MCP Server Installation](/images/mcp-server/install-sendlayer-mcp.png)
 
 #### Manual installation
 
-If you're not using the direct link, open the command palette (`cmd`+`shift`+`p` on macOS or `ctrl`+`shift`+`p` on Windows) and choose **Cursor Settings**.
-
-Then, select **Tools & MCP** from the left sidebar and click **New MCP server**.
+Open the command palette (`cmd`+`shift`+`p` on macOS or `ctrl`+`shift`+`p` on Windows), choose **Cursor Settings**, select **Tools & MCP** and click **New MCP server**.
 
 ![Cursor MCP Server Manual Installation](/images/mcp-server/cursor-setup.png)
 
-In the `mcp.json` file, add the following config:
+In the `mcp.json` file, add:
 
    ```json
    {
@@ -62,28 +89,21 @@ In the `mcp.json` file, add the following config:
    }
    ```
 
-   Be sure to replace `YOUR_SENDLAYER_API_KEY` with your actual SendLayer API key from `app.sendlayer.com`.
+   Replace `YOUR_SENDLAYER_API_KEY` with your SendLayer API key.
 
 After saving the file, restart Cursor and verify the MCP server is connected. You can now use commands like “send an email to recipient@example.com” in Agent mode.
 
-### Claude Code
+### Claude Code with an API key
 
-Run the following command on your terminal to configure the MCP server:
+Sign-in above is the simpler path. To use a key instead:
 
 ```bash
-claude mcp add --scope user --transport http sendlayer-mcp https://mcp.sendlayer.com --header "Authorization: Bearer YOUR_SENDLAYER_API_KEY"
+claude mcp add --scope user --transport http sendlayer https://mcp.sendlayer.com --header "Authorization: Bearer YOUR_SENDLAYER_API_KEY"
 ```
 
-Be sure to replace `YOUR_SENDLAYER_API_KEY` with your actual SendLayer API key.
+### Gemini CLI
 
-### Gemini-CLI
-
-Open a terminal and run the following command to edit your `~/.gemini/settings.json` file:
-```bash
-nano ~/.gemini/settings.json
-```
-
-Then, add the following lines to the file and save it:
+Open `~/.gemini/settings.json` and add:
 
 ```json
 {
@@ -100,26 +120,19 @@ Then, add the following lines to the file and save it:
 }
 ```
 
-Be sure to replace `YOUR_SENDLAYER_API_KEY` with your actual SendLayer API key.
-
-To test the connection, run the following command:
-```bash
-gemini mcp list
-```
-
-You should see the `sendlayer` server in the list. You can now use the `sendlayer` server to send emails and manage webhooks/events.
+Replace `YOUR_SENDLAYER_API_KEY` with your SendLayer API key, then run `gemini mcp list` to check that the `sendlayer` server is listed.
 
 ### Windsurf
 
-Open your Windsurf settings page. Then select the **Cascade** sidebar menu and click **Open MCP Marketplace**.
+Open your Windsurf settings page, select the **Cascade** sidebar menu and click **Open MCP Marketplace**.
 
 ![Windsurf MCP Marketplace](/images/mcp-server/windsurf-mcp-marketplace.png)
 
-Then, click the settings icon to open the `mcp_config.json` file.
+Click the settings icon to open the `mcp_config.json` file.
 
 ![Windsurf MCP Settings](/images/mcp-server/windsurf-mcp-settings.png)
 
-Once the file is open, add the following lines to the file and save it:
+Add the following and save:
 
 ```json
 {
@@ -134,16 +147,44 @@ Once the file is open, add the following lines to the file and save it:
 }
 ```
 
-Be sure to replace `YOUR_SENDLAYER_API_KEY` with your actual SendLayer API key.
+Replace `YOUR_SENDLAYER_API_KEY` with your SendLayer API key.
 
-## Features
+## Tools
 
-- Send plain text and HTML emails
-- Send emails with attachments
-- Add CC and BCC recipients
-- Customize the sender email (verified domains only)
-- Create, list, and delete webhooks
-- Retrieve and filter email events
+| Tool | What it does | Permission (sign-in) |
+|---|---|---|
+| `send_email` | Sends an email: plain text or HTML, CC and BCC, reply-to, tags, headers, attachments. | Send email |
+| `get_email_events` | Looks up the delivery events of your emails, grouped by email. Search by message id or recipient. | Read events |
+| `list_webhooks` | Lists the webhooks of a sender domain. | Manage webhooks |
+| `create_webhook` | Creates a webhook. | Manage webhooks |
+| `delete_webhook` | Deletes a webhook by its id. | Manage webhooks |
+| `list_domains` | Lists the domains and permissions of your connection. Sign-in only. | none |
+| `query_sendlayer_docs` | Fetches SendLayer developer docs: request formats and code samples. | none |
 
+With sign-in, every tool except `send_email`, `list_domains` and `query_sendlayer_docs` takes a `domain`: one of the domains you picked when you connected. You can leave it out if you picked only one. `send_email` needs a `from` address at one of those domains.
 
+An email takes at most 10 attachments, 10 MB in total, each as a public `https://` link or as base64 content with a filename.
 
+The old tool names `send-email`, `get-events`, `list-webhooks`, `create-webhook`, `delete-webhook` and `query-sendlayer-docs` still work in this release and will be removed in the next one.
+
+## Prompts
+
+Three guided prompts come with the server:
+
+- **Did my email arrive?** looks up the recent emails to one address and explains how each was delivered.
+- **What failed this week?** looks up the bounces and rejections of the last 7 days and explains the main reasons.
+- **Send a test email** sends a short test email and checks that it was delivered.
+
+## What the tools return
+
+| Tool | Returns |
+|---|---|
+| `send_email` | The status (`queued`) and the message id. |
+| `get_email_events` | For each email: the message id, the recipients and the subject. For each event: the time, the type (accepted, delivered, opened, clicked, bounced, rejected, complained, unsubscribed), the receiving mail server, the bounce or rejection code and reason, and the clicked link. No IP addresses or locations. |
+| `list_webhooks` | For each webhook: its id, URL, event and status. Never the signing key. |
+| `create_webhook` | The new webhook's id. |
+| `delete_webhook` | The deleted webhook's id. |
+| `list_domains` | The domain names and the permissions of your connection. |
+| `query_sendlayer_docs` | Pages of the public SendLayer developer docs. |
+
+The server stores nothing. It logs one line per request: the method, the tool name, the status and how long it took. It never logs keys, tokens, addresses or message content.
