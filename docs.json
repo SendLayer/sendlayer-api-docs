@@ -91,7 +91,8 @@
             "group": "Build with AI",
             "pages": [
               "integrations/ai-tools/mcp-server",
-              "integrations/ai-tools/cli"
+              "integrations/ai-tools/cli",
+              "integrations/ai-tools/agent-skills"
             ]
           },
           {

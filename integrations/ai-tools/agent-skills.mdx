@@ -1,0 +1,206 @@
+---
+title: 'SendLayer Agent Skills'
+sidebarTitle: 'Agent Skills'
+description: 'Install SendLayer Agent Skills so Claude Code, Cursor, Codex, Copilot and other AI coding agents write correct SendLayer code for the API, SDKs and CLI.'
+icon: 'wand-magic-sparkles'
+---
+
+## Available skills
+
+| Skill | Use it for |
+|---|---|
+| `sendlayer` | The REST API and the Node.js, Python, PHP, Ruby and Go SDKs: sending email, attachments, delivery events, webhooks and error codes. |
+| `sendlayer-cli` | The [SendLayer CLI](/integrations/ai-tools/cli): sending from a shell or CI pipeline, and forwarding webhooks to a local server during development. |
+| `email-best-practices` | Deliverability, SPF, DKIM and DMARC, bounce and complaint handling, HTML email, and CAN-SPAM and GDPR compliance. |
+
+The skills cover details that agents often get wrong, such as:
+
+- The webhook event names (`delivery`, `open`) differ from the names in webhook payloads (`delivered`, `opened`).
+- Webhook payloads nest the event data three levels deep, under `event.body.EventData`.
+- `WebhookID` comes back as a string, but deleting a webhook takes it as an integer.
+- The Python SDK takes `sender=` where the other SDKs take `from`.
+
+## Skills, MCP server or CLI
+
+SendLayer offers three ways to work with AI tools. You can use them together.
+
+| Tool | What it does | Use it when |
+|---|---|---|
+| Agent Skills | Teach a coding agent to write correct SendLayer code | You're adding SendLayer to an application |
+| [MCP server](/integrations/ai-tools/mcp-server) | Lets an assistant act on your SendLayer account | You want to send a test email, check delivery or manage webhooks from a chat |
+| [CLI](/integrations/ai-tools/cli) | Runs SendLayer commands in a terminal | You're scripting, working in CI, or testing webhooks locally |
+
+The Claude Code plugin installs the skills and connects the MCP server in one step.
+
+## Prerequisites
+
+- An AI coding agent that supports skills
+- Node.js 18 or newer, to install with `npx`
+- A SendLayer account with a verified sending domain ([authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/)), for the code the agent writes to send email
+
+## Installation
+
+<Tabs>
+<Tab title="Claude Code">
+  Install the plugin. It adds all three skills and connects the SendLayer MCP server:
+
+  ```bash
+  /plugin marketplace add SendLayer/sendlayer-skills
+  /plugin install sendlayer@sendlayer-skills
+  ```
+
+  To install only the skills, without the MCP server:
+
+  ```bash
+  npx skills add SendLayer/sendlayer-skills -a claude-code
+  ```
+
+  Project skills go in `.claude/skills/`. Add `-g` to install them for every project, in `~/.claude/skills/`.
+</Tab>
+
+<Tab title="Cursor">
+  ```bash
+  npx skills add SendLayer/sendlayer-skills -a cursor
+  ```
+
+  Project skills go in `.agents/skills/`. Add `-g` to install them globally, in `~/.cursor/skills/`.
+</Tab>
+
+<Tab title="Codex">
+  ```bash
+  npx skills add SendLayer/sendlayer-skills -a codex
+  ```
+
+  Project skills go in `.agents/skills/`. Add `-g` to install them globally, in `~/.codex/skills/`.
+</Tab>
+
+<Tab title="GitHub Copilot">
+  ```bash
+  npx skills add SendLayer/sendlayer-skills -a github-copilot
+  ```
+
+  Project skills go in `.agents/skills/`. Add `-g` to install them globally, in `~/.copilot/skills/`.
+</Tab>
+
+<Tab title="Other agents">
+  Pass your agent's name to `-a`:
+
+  ```bash
+  npx skills add SendLayer/sendlayer-skills -a gemini-cli
+  npx skills add SendLayer/sendlayer-skills -a windsurf
+  npx skills add SendLayer/sendlayer-skills -a zed
+  npx skills add SendLayer/sendlayer-skills -a opencode
+  ```
+
+  Run `npx skills add --help` to list every supported agent and its install folder.
+</Tab>
+</Tabs>
+
+Without `-a`, `npx skills add SendLayer/sendlayer-skills` asks which agents and skills to install.
+
+### Claude.ai and Claude Desktop
+
+Claude.ai takes custom skills as zip files. This requires a Pro, Max, Team or Enterprise plan with code execution turned on.
+
+<Steps>
+<Step title="Download the skills">
+  ```bash
+  git clone https://github.com/SendLayer/sendlayer-skills.git
+  cd sendlayer-skills/skills
+  zip -r sendlayer.zip sendlayer
+  ```
+
+  Repeat the `zip` command for `sendlayer-cli` and `email-best-practices` if you want them.
+</Step>
+
+<Step title="Upload each zip">
+  In Claude, open **Settings**, then **Capabilities**, and upload each zip file under **Skills**.
+</Step>
+</Steps>
+
+<Note>
+Skills uploaded to Claude.ai don't sync to Claude Code, and the other way round. To use SendLayer from a chat without coding, connect the [MCP server](/integrations/ai-tools/mcp-server) instead.
+</Note>
+
+## Connect the MCP server from the Claude Code plugin
+
+The plugin connects to the hosted MCP server at `https://mcp.sendlayer.com`. You can sign in with SendLayer or use an API key.
+
+### Sign in with SendLayer
+
+Sign-in is the default when `SENDLAYER_API_KEY` isn't set.
+
+<Steps>
+<Step title="Open the MCP menu">
+  In Claude Code, run `/mcp` and choose the `sendlayer` server. It shows as needing authentication.
+</Step>
+
+<Step title="Authenticate">
+  Choose **Authenticate**. Your browser opens the SendLayer sign-in page.
+</Step>
+
+<Step title="Choose domains and permissions">
+  Log in, then choose which sender domains Claude Code may use and what it may do. **Send email** and **read delivery events** are on. **Manage webhooks** is off unless you turn it on. Approve, and the SendLayer tools are ready.
+</Step>
+</Steps>
+
+### Use an API key
+
+Set the `SENDLAYER_API_KEY` environment variable, and the plugin sends it instead of asking you to sign in. To set it for Claude Code only, add it to `~/.claude/settings.json`:
+
+```json ~/.claude/settings.json
+{
+  "env": {
+    "SENDLAYER_API_KEY": "your-api-key"
+  }
+}
+```
+
+Restart Claude Code after you change the file. An API key belongs to one sender domain ([managing API keys](https://sendlayer.com/docs/managing-api-keys/)).
+
+<Warning>
+If `SENDLAYER_API_KEY` is set in your shell for another tool, such as the SendLayer CLI, the plugin uses that key instead of sign-in.
+</Warning>
+
+## Verify the skills
+
+Ask your agent a SendLayer question, for example:
+
+```text
+Add a SendLayer webhook to my app that notifies me when an email is delivered.
+```
+
+With the `sendlayer` skill loaded, the agent creates the webhook with the event `delivery` and checks for `delivered` in the payload it receives. In Claude Code, the agent shows that it's using the `sendlayer` skill.
+
+Run `npx skills ls` to list the skills installed for each agent.
+
+## Update the skills
+
+Skills don't update on their own. To get the latest version, run the install command again:
+
+```bash
+npx skills add SendLayer/sendlayer-skills
+```
+
+In Claude Code, run `/plugin` and update the `sendlayer` plugin from the `sendlayer-skills` marketplace.
+
+## Get help
+
+Report problems or suggest changes in the [SendLayer Agent Skills GitHub repository](https://github.com/SendLayer/sendlayer-skills/issues).
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="What is an agent skill?">
+    A skill is a folder with a `SKILL.md` file and optional reference files. The agent reads each skill's short description up front, and loads the full instructions only when a task matches. Skills add knowledge to the agent. They don't run code or call SendLayer by themselves.
+  </Accordion>
+  <Accordion title="Do the skills need my API key?">
+    No. Skills are instructions for the agent. Only the code the agent writes, the CLI and the MCP server need credentials. The code reads your API key the way your app does, for example from an environment variable.
+  </Accordion>
+  <Accordion title="Do the skills send data to SendLayer?">
+    No. Skills are files on your computer that the agent reads. The agent contacts SendLayer only when it runs code, a CLI command or an MCP tool that calls the SendLayer API.
+  </Accordion>
+  <Accordion title="Can I install only one skill?">
+    Yes. Run `npx skills add SendLayer/sendlayer-skills` without `-a` and pick the skills you want, or copy one folder from `skills/` in the repository into your agent's skills folder.
+  </Accordion>
+</AccordionGroup>
