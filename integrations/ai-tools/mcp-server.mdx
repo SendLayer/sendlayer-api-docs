@@ -5,20 +5,15 @@ description: 'Connect SendLayer to Claude, ChatGPT, Grok, Cursor and other AI to
 icon: 'robot'
 ---
 
-## Overview
-The hosted SendLayer MCP server at `https://mcp.sendlayer.com` lets an AI assistant send email from your verified sender domains, look up what happened to an email, summarize the week's failures and manage webhooks. It runs as your SendLayer account and stores nothing of its own.
-
-There are two ways to connect:
-
-- **Sign in with SendLayer.** Assistants that can sign in to remote MCP servers (Claude, ChatGPT, Grok, Claude Code and others) use your SendLayer login. No API key. You choose which sender domains and permissions the assistant gets.
-- **API key.** Editors and CLIs that pass headers (Cursor, Gemini CLI, Windsurf) use an API key, which belongs to one sender domain.
-
-## What is MCP?
-MCP (Model Context Protocol) is an open protocol that lets AI tools call external services. The SendLayer MCP server exposes SendLayer as a set of tools the assistant can use during a conversation.
-
 ## Prerequisites
 - A SendLayer account with a verified sending domain ([authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/))
 - For the API key method, an API key for that domain ([managing API keys](https://sendlayer.com/docs/managing-api-keys/))
+
+## Connection methods
+The SendLayer MCP server is hosted at `https://mcp.sendlayer.com`. There are two ways to connect:
+
+- **Sign in with SendLayer.** Assistants that can sign in to remote MCP servers (Claude, ChatGPT, Grok, Claude Code and others) use your SendLayer login. No API key. You choose which sender domains and permissions the assistant gets.
+- **API key.** Editors and CLIs that pass headers (Cursor, Gemini CLI, Windsurf) use an API key, which belongs to one sender domain.
 
 ## Sign in with SendLayer
 
@@ -154,14 +149,18 @@ Replace `YOUR_SENDLAYER_API_KEY` with your SendLayer API key.
 | Tool | What it does | Permission (sign-in) |
 |---|---|---|
 | `send_email` | Sends an email: plain text or HTML, CC and BCC, reply-to, tags, headers, attachments. | Send email |
+| `preview_email` | Shows an email without sending it, so you can check it first. Shows a preview in Claude and ChatGPT. | Send email |
 | `get_email_events` | Looks up the delivery events of your emails, grouped by email. Search by message id or recipient. | Read events |
+| `get_email_timeline` | Shows every delivery event of one email, by its message id. Shows a timeline in Claude and ChatGPT. | Read events |
 | `list_webhooks` | Lists the webhooks of a sender domain. | Manage webhooks |
 | `create_webhook` | Creates a webhook. | Manage webhooks |
 | `delete_webhook` | Deletes a webhook by its id. | Manage webhooks |
 | `list_domains` | Lists the domains and permissions of your connection. Sign-in only. | none |
 | `query_sendlayer_docs` | Fetches SendLayer developer docs: request formats and code samples. | none |
 
-With sign-in, every tool except `send_email`, `list_domains` and `query_sendlayer_docs` takes a `domain`: one of the domains you picked when you connected. You can leave it out if you picked only one. `send_email` needs a `from` address at one of those domains.
+With sign-in, every tool except `send_email`, `preview_email`, `list_domains` and `query_sendlayer_docs` takes a `domain`: one of the domains you picked when you connected. You can leave it out if you picked only one. `send_email` and `preview_email` need a `from` address at one of those domains.
+
+`preview_email` takes the same input as `send_email` and returns a `preview_id`. When `send_email` gets that id as `previewId`, it sends only if the email is exactly the one you previewed. The preview shows remote images as placeholders and runs no scripts.
 
 An email takes at most 10 attachments, 10 MB in total, each as a public `https://` link or as base64 content with a filename.
 
@@ -180,7 +179,9 @@ Three guided prompts come with the server:
 | Tool | Returns |
 |---|---|
 | `send_email` | The status (`queued`) and the message id. |
+| `preview_email` | The email as it would be sent (attachments by name and type, not their content) and its `preview_id`. |
 | `get_email_events` | For each email: the message id, the recipients and the subject. For each event: the time, the type (accepted, delivered, opened, clicked, bounced, rejected, complained, unsubscribed), the receiving mail server, the bounce or rejection code and reason, and the clicked link. No IP addresses or locations. |
+| `get_email_timeline` | The same as `get_email_events`, for one email over the last 30 days. |
 | `list_webhooks` | For each webhook: its id, URL, event and status. Never the signing key. |
 | `create_webhook` | The new webhook's id. |
 | `delete_webhook` | The deleted webhook's id. |
@@ -188,3 +189,11 @@ Three guided prompts come with the server:
 | `query_sendlayer_docs` | Pages of the public SendLayer developer docs. |
 
 The server stores nothing. It logs one line per request: the method, the tool name, the status and how long it took. It never logs keys, tokens, addresses or message content.
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="What is MCP?">
+    MCP (Model Context Protocol) is an open protocol that lets AI tools call external services. The SendLayer MCP server exposes SendLayer as a set of tools the assistant can use during a conversation.
+  </Accordion>
+</AccordionGroup>
