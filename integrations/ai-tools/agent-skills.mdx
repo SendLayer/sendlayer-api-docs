@@ -16,7 +16,7 @@ icon: 'wand-magic-sparkles'
 The skills cover details that agents often get wrong, such as:
 
 - The webhook event names (`delivery`, `open`) differ from the names in webhook payloads (`delivered`, `opened`).
-- Webhook payloads nest the event data three levels deep, under `event.body.EventData`.
+- Webhook handlers read the event data at `req.body.EventData`. There is no outer wrapper around it.
 - `WebhookID` comes back as a string, but deleting a webhook takes it as an integer.
 - The Python SDK takes `sender=` where the other SDKs take `from`.
 
