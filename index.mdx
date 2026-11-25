@@ -1,0 +1,215 @@
+---
+title: 'SendLayer Developer Documentation'
+sidebarTitle: 'Home'
+description: 'Send transactional email with the SendLayer API, SDKs, CLI and AI tools. Start here to find the quickstart, guides and the API reference.'
+icon: 'house'
+mode: 'wide'
+---
+
+<div className="not-prose my-8 rounded-2xl border border-gray-200 dark:border-white/10 bg-gradient-to-br from-primary/10 via-transparent to-transparent p-8 md:p-10">
+  <p className="text-sm font-semibold uppercase tracking-wide text-primary dark:text-primary-light">Email API, SDKs and AI tools</p>
+  <p className="mt-3 max-w-2xl text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white">Send transactional email from your app in minutes</p>
+  <p className="mt-3 max-w-2xl text-base text-gray-600 dark:text-gray-400">Send order confirmations, password resets and notifications with the REST API or an SDK for Node.js, Python, PHP, Ruby or Go. Then track delivery with events and webhooks.</p>
+  <div className="mt-6 flex flex-wrap gap-3">
+    <a href="/quickstart/introduction" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white no-underline hover:opacity-90">Read the quickstart</a>
+    <a href="/api-reference/introduction" className="rounded-lg border border-gray-300 dark:border-white/20 px-4 py-2 text-sm font-semibold text-gray-900 dark:text-white no-underline hover:border-primary">Browse the API reference</a>
+  </div>
+</div>
+
+## Send your first email
+
+<Steps>
+  <Step title="Authorize your sending domain">
+    [Authorize your domain](https://sendlayer.com/docs/authorizing-your-domain/) in SendLayer. This proves that you own it and helps your email reach the inbox.
+  </Step>
+  <Step title="Get your API key">
+    Create or copy an API key in your SendLayer account. See [managing API keys](https://sendlayer.com/docs/managing-api-keys/).
+  </Step>
+  <Step title="Install an SDK and send">
+    <CodeGroup>
+    ```javascript Node.js
+    // npm install sendlayer
+    import { SendLayer } from 'sendlayer';
+
+    const sendlayer = new SendLayer('your-api-key');
+
+    await sendlayer.Emails.send({
+      from: 'sender@example.com',
+      to: 'recipient@example.com',
+      subject: 'Test Email',
+      text: 'This is a test email'
+    });
+    ```
+
+    ```python Python
+    # pip install sendlayer
+    from sendlayer import SendLayer
+
+    sendlayer = SendLayer("your-api-key")
+
+    sendlayer.Emails.send(
+        sender="sender@example.com",
+        to="recipient@example.com",
+        subject="Test Email",
+        text="This is a test email"
+    )
+    ```
+
+    ```php PHP
+    <?php
+    // composer require sendlayer/sendlayer-php
+    require_once 'vendor/autoload.php';
+
+    use SendLayer\SendLayer;
+
+    $sendlayer = new SendLayer('your-api-key');
+
+    $sendlayer->Emails->send(
+      from: 'sender@example.com',
+      to: 'recipient@example.com',
+      subject: 'Test Email',
+      text: 'This is a test email'
+    );
+    ```
+
+    ```ruby Ruby
+    # gem install sendlayer
+    require 'sendlayer'
+
+    sendlayer = SendLayer::SendLayer.new('your-api-key')
+
+    sendlayer.emails.send(
+      from: 'sender@example.com',
+      to: 'recipient@example.com',
+      subject: 'Test Email',
+      text: 'This is a test email'
+    )
+    ```
+
+    ```go Go
+    // go get github.com/sendlayer/sendlayer-go
+    package main
+
+    import (
+    	"fmt"
+    	"log"
+
+    	"github.com/sendlayer/sendlayer-go"
+    )
+
+    func main() {
+    	sl := sendlayer.New("your-api-key")
+
+    	resp, err := sl.Emails.Send(&sendlayer.SendEmailRequest{
+    		From:    "sender@example.com",
+    		To:      "recipient@example.com",
+    		Subject: "Test Email",
+    		Text:    "This is a test email",
+    	})
+    	if err != nil {
+    		log.Fatal(err)
+    	}
+
+    	fmt.Println("Email sent! Message ID:", resp.MessageID)
+    }
+    ```
+
+    ```bash cURL
+    curl --request POST \
+      --url https://console.sendlayer.com/api/v1/email \
+      --header 'Authorization: Bearer <apiKey>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+      "From": { "email": "sender@example.com" },
+      "To": [{ "email": "recipient@example.com" }],
+      "Subject": "Test Email",
+      "ContentType": "Text",
+      "PlainContent": "This is a test email"
+    }'
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+The [quickstart](/quickstart/introduction) walks through each step in more detail.
+
+## Build with AI
+
+Connect SendLayer to the AI tools you already use.
+
+<CardGroup cols={3}>
+  <Card title="MCP server" icon="robot" href="/integrations/ai-tools/mcp-server" cta="Connect the MCP server">
+    Send email, check delivery and manage webhooks from Claude, ChatGPT, Cursor and other assistants.
+  </Card>
+  <Card title="CLI" icon="terminal" href="/integrations/ai-tools/cli" cta="Install the CLI">
+    Send email, query events and test webhooks from your terminal or CI pipeline.
+  </Card>
+  <Card title="Agent Skills" icon="wand-magic-sparkles" href="/integrations/ai-tools/agent-skills" cta="Install the skills">
+    Teach coding agents such as Claude Code, Cursor and Codex to write correct SendLayer code.
+  </Card>
+</CardGroup>
+
+## SDKs
+
+<CardGroup cols={3}>
+  <Card title="Node.js" icon="node-js" href="/sdks/nodejs/introduction" horizontal>
+    Next.js, Express.js, Nuxt
+  </Card>
+  <Card title="Python" icon="python" href="/sdks/python/introduction" horizontal>
+    Flask, FastAPI
+  </Card>
+  <Card title="PHP" icon="php" href="/sdks/php/introduction" horizontal>
+    Laravel
+  </Card>
+  <Card title="Ruby" icon="gem" href="/sdks/ruby/send-with-ruby" horizontal>
+    Ruby on Rails
+  </Card>
+  <Card title="Go" icon="golang" href="/sdks/go/send-with-go" horizontal>
+    Go modules
+  </Card>
+  <Card title="Install an SDK" icon="download" href="/quickstart/installation" horizontal>
+    Every package manager
+  </Card>
+</CardGroup>
+
+## Guides
+
+<div className="not-prose grid gap-6 md:grid-cols-2 my-6">
+  <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-6">
+    <p className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white"><Icon icon="envelope" /> Sending email</p>
+    <ul className="mt-4 space-y-3 text-sm">
+      <li><a className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light" href="/guides/send-email">Send an email →</a></li>
+      <li><a className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light" href="/guides/send-email-to-multiple-recipients">Send to multiple recipients, CC and BCC →</a></li>
+      <li><a className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light" href="/guides/send-email-with-attachments">Send attachments →</a></li>
+    </ul>
+  </div>
+  <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-6">
+    <p className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white"><Icon icon="chart-line" /> Tracking delivery</p>
+    <ul className="mt-4 space-y-3 text-sm">
+      <li><a className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light" href="/guides/get-events">Retrieve email events →</a></li>
+      <li><a className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light" href="/guides/manage-webhooks">Manage webhooks →</a></li>
+    </ul>
+  </div>
+</div>
+
+## API reference
+
+All requests go to `https://console.sendlayer.com/api/v1/` and authenticate with your API key in an `Authorization: Bearer <apiKey>` header.
+
+| Method | Endpoint | What it does |
+|---|---|---|
+| <Badge color="green">POST</Badge> | [`/email`](/api-reference/endpoint/email) | Send an email |
+| <Badge color="blue">GET</Badge> | [`/events`](/api-reference/endpoint/events) | Get the delivery events of your email |
+| <Badge color="blue">GET</Badge> | [`/webhooks`](/api-reference/endpoint/webhooks/get) | List your webhooks |
+| <Badge color="green">POST</Badge> | [`/webhooks`](/api-reference/endpoint/webhooks/post) | Create a webhook |
+| <Badge color="red">DELETE</Badge> | [`/webhooks/{id}`](/api-reference/endpoint/webhooks/delete) | Delete a webhook |
+
+See also [error codes](/api-reference/error-codes) and [rate limits](/api-reference/rate-limit).
+
+## Resources
+
+<Columns cols={3}>
+  <Card title="Changelog" icon="clock-rotate-left" href="/changelog" horizontal />
+  <Card title="Help docs" icon="book-open-cover" href="https://sendlayer.com/docs" horizontal />
+  <Card title="Contact support" icon="headset" href="https://sendlayer.com/contact/" horizontal />
+</Columns>

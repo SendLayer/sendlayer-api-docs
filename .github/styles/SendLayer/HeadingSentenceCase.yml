@@ -1,0 +1,58 @@
+extends: capitalization
+message: "'%s' should be in sentence case."
+level: warning
+scope: heading
+match: $sentence
+# Proper nouns and acronyms keep their capitals in a sentence-case heading.
+exceptions:
+  - SendLayer
+  - API
+  - APIs
+  - SDK
+  - SDKs
+  - AI
+  - MCP
+  - CLI
+  - OAuth
+  - REST
+  - HTML
+  - JSON
+  - URL
+  - ID
+  - CC
+  - BCC
+  - SMTP
+  - SPF
+  - DKIM
+  - DMARC
+  - FAQ
+  - FAQs
+  - CI
+  - JavaScript
+  - TypeScript
+  - Node.js
+  - Python
+  - PHP
+  - Ruby
+  - Rails
+  - Go
+  - Next.js
+  - Express.js
+  - Nuxt
+  - Laravel
+  - Flask
+  - FastAPI
+  - Claude
+  - Claude Code
+  - Claude.ai
+  - Claude Desktop
+  - ChatGPT
+  - Cursor
+  - Codex
+  - Copilot
+  - GitHub
+  - GitHub Actions
+  - Gemini
+  - Windsurf
+  - Grok
+  - Agent Skills
